@@ -2,8 +2,7 @@
 
 Reveal whitespace characters in visual mode, similar to VSCode.
 
-![vis-ws](https://github.com/mcauley-penney/visual-whitespace.nvim/assets/59481467/4208b9b1-1c39-4663-9867-ec5d8f7659e1)
-
+![vis-ws](https://github.com/mcauley-penney/visual-whitespace.nvim/assets/59481467/5d8b1e9a-e1b6-479a-b1d1-fcf0162fa4a8)
 
 ## Installation and configuration
 
