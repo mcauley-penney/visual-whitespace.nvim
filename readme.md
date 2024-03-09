@@ -23,10 +23,11 @@ To install it with the default settings using Lazy:
      highlight = { fg = "#4b4c54", bg = "#2B3237" },
      space_char = '·',
      tab_char = '>'
+     nl_char = "↲"
     },
 ```
 
-
 ## Credit
+
 - [This post on the Neovim subreddit](https://www.reddit.com/r/neovim/comments/1b1sv3a/function_to_get_visually_selected_text/), for doing a lot of the math for me
 - [aaron-p1/match-visual.nvim](https://github.com/aaron-p1/match-visual.nvim)

@@ -8,7 +8,8 @@ local NS_ID = api.nvim_create_namespace("VisualWhitespace")
 local cfg = {
   highlight = { fg = "#4b4c54", bg = "#2B3237" },
   space_char = '·',
-  tab_char = '>'
+  tab_char = '>',
+  nl_char = "↲"
 }
 
 local function del_marked_ws(s_pos, e_pos)
@@ -43,6 +44,8 @@ local function get_visual_selection_data(srow, scol, erow, ecol)
 end
 
 M.mark_ws = function()
+  local ff = vim.bo.fileformat
+  local nl_str = ff == "unix" and "\n" or ff == "mac" and "\r" or "\r\n"
   local cur_mode = fn.mode()
 
   local _, reverse, srow, scol, erow, ecol
@@ -71,6 +74,7 @@ M.mark_ws = function()
   for cur_row = srow, erow do
     -- gets the physical line, not the display line
     local line_text = fn.getline(cur_row)
+    line_text = line_text .. "\n"
 
     -- adjust start_col and end_col for partial line selections
     local select_scol = (cur_row == srow) and scol or 1
@@ -87,6 +91,11 @@ M.mark_ws = function()
       elseif cur_char == "\t" then
         api.nvim_buf_set_extmark(0, NS_ID, cur_row - 1, cur_col - 1, {
           virt_text = { { cfg["tab_char"], "VisualNonText" } },
+          virt_text_pos = 'overlay',
+        })
+      elseif cur_char == nl_str then
+        api.nvim_buf_set_extmark(0, NS_ID, cur_row - 1, cur_col - 1, {
+          virt_text = { { cfg["nl_char"], "VisualNonText" } },
           virt_text_pos = 'overlay',
         })
       end
