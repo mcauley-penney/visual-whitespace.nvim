@@ -10,7 +10,7 @@ To install it with the default settings using Lazy:
 
 ```lua
   {
-   "mcauley-penney/visual-whitespace.nvim",
+   'mcauley-penney/visual-whitespace.nvim',
     config = true
   }
 ```
@@ -22,7 +22,7 @@ To install it with the default settings using Lazy:
      highlight = { link = 'Visual' },
      space_char = '·',
      tab_char = '→',
-     nl_char = "↲"
+     nl_char = '↲'
     },
 ```
 
