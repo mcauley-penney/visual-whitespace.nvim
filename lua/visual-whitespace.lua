@@ -6,9 +6,9 @@ local LAST_POS = nil
 local NS_ID = api.nvim_create_namespace("VisualWhitespace")
 
 local cfg = {
-  highlight = { fg = "#4b4c54", bg = "#2B3237" },
+  highlight = { link = "Visual" },
   space_char = '·',
-  tab_char = '>',
+  tab_char = '→',
   nl_char = "↲"
 }
 

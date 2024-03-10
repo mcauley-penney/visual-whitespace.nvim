@@ -19,9 +19,9 @@ To install it with the default settings using Lazy:
 
 ```lua
     opts = {
-     highlight = { fg = "#4b4c54", bg = "#2B3237" },
+     highlight = { link = 'Visual' },
      space_char = '·',
-     tab_char = '>'
+     tab_char = '→',
      nl_char = "↲"
     },
 ```
