@@ -51,19 +51,21 @@ local function set_mark(row, col, text)
 end
 
 M.mark_ws = function()
-  local ff = vim.bo.fileformat
-  local nl_str = ff == 'unix' and '\n' or ff == 'mac' and '\r' or '\r\n'
   local cur_mode = fn.mode()
 
-  local _, reverse, srow, scol, erow, ecol
-  if cur_mode == 'v' then
-    _, srow, scol = table.unpack(fn.getpos('v'))
-    _, erow, ecol = table.unpack(fn.getpos('.'))
-  else
+  if cur_mode ~= 'v' then
     return
   end
 
-  reverse, srow, scol, erow, ecol = table.unpack(get_visual_selection_data(srow, scol, erow, ecol))
+  local ff = vim.bo.fileformat
+  local nl_str = ff == 'unix' and '\n' or ff == 'mac' and '\r' or '\r\n'
+
+  local s_pos = fn.getpos('v')
+  local e_pos = fn.getpos('.')
+
+  local srow, scol = s_pos[2], s_pos[3]
+  local erow, ecol = e_pos[2], e_pos[3]
+  e_pos = { erow, ecol }
 
   local e_pos = nil
   if not reverse then
