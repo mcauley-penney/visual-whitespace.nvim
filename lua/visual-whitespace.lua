@@ -80,8 +80,7 @@ M.mark_ws = function()
 
   for cur_row = srow, erow do
     -- gets the physical line, not the display line
-    local line_text = fn.getline(cur_row)
-    line_text = line_text .. '\n'
+    local line_text = fn.getline(cur_row) .. nl_str
 
     -- adjust start_col and end_col for partial line selections
     local select_scol = (cur_row == srow) and scol or 1
