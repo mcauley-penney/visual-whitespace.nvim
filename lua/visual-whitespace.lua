@@ -23,26 +23,6 @@ local function del_marked_ws(s_pos, e_pos)
   end
 end
 
-local function get_visual_selection_data(srow, scol, erow, ecol)
-  if srow < erow or (srow == erow and scol <= ecol) then
-    return {
-      false,
-      srow,
-      scol,
-      erow,
-      ecol,
-    }
-  else
-    return {
-      true,
-      erow,
-      ecol,
-      srow,
-      scol
-    }
-  end
-end
-
 local function set_mark(row, col, text)
   api.nvim_buf_set_extmark(0, NS_ID, row - 1, col - 1, {
     virt_text = { { text, 'VisualNonText' } },
@@ -67,11 +47,9 @@ M.mark_ws = function()
   local erow, ecol = e_pos[2], e_pos[3]
   e_pos = { erow, ecol }
 
-  local e_pos = nil
-  if not reverse then
-    e_pos = { erow, ecol }
-  else
-    e_pos = { srow, scol }
+  -- reverse condition; Visual mode moving up the buffer
+  if srow > erow or (srow == erow and scol >= ecol) then
+    srow, scol, erow, ecol = erow, ecol, srow, scol
   end
 
   if LAST_POS ~= nil then
