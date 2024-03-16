@@ -58,9 +58,12 @@ M.mark_ws = function()
 
   LAST_POS = e_pos
 
+  local text = api.nvim_buf_get_lines(0, srow - 1, erow, true)
+  local text_i = 1
+
   for cur_row = srow, erow do
     -- gets the physical line, not the display line
-    local line_text = fn.getline(cur_row) .. nl_str
+    local line_text = text[text_i] .. nl_str
 
     -- adjust start_col and end_col for partial line selections
     local select_scol = (cur_row == srow) and scol or 1
@@ -77,6 +80,8 @@ M.mark_ws = function()
         set_mark(cur_row, cur_col, cfg['nl_char'])
       end
     end
+
+    text_i = text_i + 1
   end
 end
 
