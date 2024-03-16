@@ -1,8 +1,11 @@
-# visual-whitespace.nvim 🔎
+# 🔎 visual-whitespace.nvim 
 
 Reveal whitespace characters in visual mode, similar to VSCode.
 
-![vis-ws](https://github.com/mcauley-penney/visual-whitespace.nvim/assets/59481467/5d8b1e9a-e1b6-479a-b1d1-fcf0162fa4a8)
+![visual-ws](https://github.com/mcauley-penney/visual-whitespace.nvim/assets/59481467/89157048-1975-409c-977c-2d3fb43852d8)
+
+<sub>GIF: Highlighting in charwise-visual and linewise-visual</sub>
+
 
 ## Installation and configuration
 
