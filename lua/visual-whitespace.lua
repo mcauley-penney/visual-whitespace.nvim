@@ -30,10 +30,40 @@ local function set_mark(row, col, text)
   })
 end
 
+local function get_charwise_pos(s_pos, e_pos)
+  local reverse = false
+  local srow, scol = s_pos[2], s_pos[3]
+  local erow, ecol = e_pos[2], e_pos[3]
+  s_pos = { srow, scol }
+  e_pos = { erow, ecol }
+
+  -- reverse condition, i.e. visual mode moving up the buffer
+  if srow > erow or (srow == erow and scol >= ecol) then
+    reverse = true
+    s_pos, e_pos = e_pos, s_pos
+  end
+
+  return s_pos, e_pos, reverse
+end
+
+local function get_linewise_pos(s_pos, e_pos)
+  local reverse = false
+  local srow, scol = s_pos[2], 1
+  local erow, ecol = e_pos[2], vim.v.maxcol
+
+  -- reverse condition; start pos = srow, maxcol; end pos = erow, 1
+  if srow > erow then
+    reverse = true
+    srow, erow = erow, srow
+  end
+
+  return { srow, scol }, { erow, ecol }, reverse
+end
+
 M.mark_ws = function()
   local cur_mode = fn.mode()
 
-  if cur_mode ~= 'v' then
+  if cur_mode ~= 'v' and cur_mode ~= 'V' then
     return
   end
 
@@ -42,21 +72,22 @@ M.mark_ws = function()
 
   local s_pos = fn.getpos('v')
   local e_pos = fn.getpos('.')
+  local reverse
 
-  local srow, scol = s_pos[2], s_pos[3]
-  local erow, ecol = e_pos[2], e_pos[3]
-  e_pos = { erow, ecol }
-
-  -- reverse condition; Visual mode moving up the buffer
-  if srow > erow or (srow == erow and scol >= ecol) then
-    srow, scol, erow, ecol = erow, ecol, srow, scol
+  if cur_mode == 'v' then
+    s_pos, e_pos, reverse = get_charwise_pos(s_pos, e_pos)
+  else
+    s_pos, e_pos, reverse = get_linewise_pos(s_pos, e_pos)
   end
 
   if LAST_POS ~= nil then
     del_marked_ws(LAST_POS, e_pos)
   end
 
-  LAST_POS = e_pos
+  LAST_POS = reverse and s_pos or e_pos
+
+  local srow, scol = s_pos[1], s_pos[2]
+  local erow, ecol = e_pos[1], e_pos[2]
 
   local text = api.nvim_buf_get_lines(0, srow - 1, erow, true)
   local text_i = 1
@@ -66,8 +97,14 @@ M.mark_ws = function()
     local line_text = text[text_i] .. nl_str
 
     -- adjust start_col and end_col for partial line selections
-    local select_scol = (cur_row == srow) and scol or 1
-    local select_ecol = (cur_row == erow) and ecol or #line_text
+    local select_scol, select_ecol
+    if cur_mode == 'v' then
+      select_scol = (cur_row == srow) and scol or 1
+      select_ecol = (cur_row == erow) and ecol or #line_text
+    else
+      select_scol = scol
+      select_ecol = #line_text
+    end
 
     for cur_col = select_scol, select_ecol do
       local cur_char = line_text:sub(cur_col, cur_col)
