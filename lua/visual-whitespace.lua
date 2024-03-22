@@ -2,7 +2,6 @@ local api = vim.api
 local fn = vim.fn
 
 local M = {}
-local LAST_POS = nil
 local NS_ID = api.nvim_create_namespace('VisualWhitespace')
 
 local cfg = {
@@ -12,17 +11,6 @@ local cfg = {
   nl_char = '↲'
 }
 
-local function del_marked_ws(s_pos, e_pos)
-  local adjusted_s_pos = { s_pos[1] - 1, s_pos[2] - 1 }
-  local adjusted_e_pos = { e_pos[1] - 1, e_pos[2] - 1 }
-
-  local marks = api.nvim_buf_get_extmarks(0, NS_ID, adjusted_s_pos, adjusted_e_pos, {})
-
-  for _, mark_tbl in ipairs(marks) do
-    api.nvim_buf_del_extmark(0, NS_ID, mark_tbl[1])
-  end
-end
-
 local function set_mark(row, col, text)
   api.nvim_buf_set_extmark(0, NS_ID, row - 1, col - 1, {
     virt_text = { { text, 'VisualNonText' } },
@@ -31,7 +19,6 @@ local function set_mark(row, col, text)
 end
 
 local function get_charwise_pos(s_pos, e_pos)
-  local reverse = false
   local srow, scol = s_pos[2], s_pos[3]
   local erow, ecol = e_pos[2], e_pos[3]
   s_pos = { srow, scol }
@@ -39,25 +26,22 @@ local function get_charwise_pos(s_pos, e_pos)
 
   -- reverse condition, i.e. visual mode moving up the buffer
   if srow > erow or (srow == erow and scol >= ecol) then
-    reverse = true
     s_pos, e_pos = e_pos, s_pos
   end
 
-  return s_pos, e_pos, reverse
+  return s_pos, e_pos
 end
 
 local function get_linewise_pos(s_pos, e_pos)
-  local reverse = false
   local srow, scol = s_pos[2], 1
   local erow, ecol = e_pos[2], vim.v.maxcol
 
   -- reverse condition; start pos = srow, maxcol; end pos = erow, 1
   if srow > erow then
-    reverse = true
     srow, erow = erow, srow
   end
 
-  return { srow, scol }, { erow, ecol }, reverse
+  return { srow, scol }, { erow, ecol }
 end
 
 M.mark_ws = function()
@@ -72,19 +56,14 @@ M.mark_ws = function()
 
   local s_pos = fn.getpos('v')
   local e_pos = fn.getpos('.')
-  local reverse
 
   if cur_mode == 'v' then
-    s_pos, e_pos, reverse = get_charwise_pos(s_pos, e_pos)
+    s_pos, e_pos = get_charwise_pos(s_pos, e_pos)
   else
-    s_pos, e_pos, reverse = get_linewise_pos(s_pos, e_pos)
+    s_pos, e_pos = get_linewise_pos(s_pos, e_pos)
   end
 
-  if LAST_POS ~= nil then
-    del_marked_ws(LAST_POS, e_pos)
-  end
-
-  LAST_POS = reverse and s_pos or e_pos
+  M.clear_marked_ws()
 
   local srow, scol = s_pos[1], s_pos[2]
   local erow, ecol = e_pos[1], e_pos[2]
