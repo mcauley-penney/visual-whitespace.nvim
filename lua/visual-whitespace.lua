@@ -46,32 +46,54 @@ local function get_marks(s_pos, e_pos, mode)
 
   local text = api.nvim_buf_get_lines(0, srow - 1, erow, true)
 
-  local line_text, select_scol, select_ecol, cur_char
+  local line_text, line_len, adjusted_scol, adjusted_ecol, match_char
   local ws_marks = {}
   for cur_row = srow, erow do
     -- gets the physical line, not the display line
     line_text = table.concat { text[cur_row - srow + 1], nl_str }
+    line_len = #line_text
 
     -- adjust start_col and end_col for partial line selections
     if mode == 'v' then
-      select_scol = (cur_row == srow) and scol or 1
-      select_ecol = (cur_row == erow) and ecol or #line_text
-    else
-      select_scol = scol
-      select_ecol = #line_text
-    end
+      adjusted_scol = (cur_row == srow) and scol or 1
+      adjusted_ecol = (cur_row == erow) and ecol or line_len
 
-    for cur_col = select_scol, select_ecol do
-      cur_char = line_text:sub(cur_col, cur_col)
+      --[[
+        There are four ranges to manage:
+          1. start to end
+          2. start to middle
+          3. middle to middle
+          4. middle to end
 
-      if cur_char == ' ' then
-        table.insert(ws_marks, { cur_row, cur_col, CFG['space_char'] })
-      elseif cur_char == '\t' then
-        table.insert(ws_marks, { cur_row, cur_col, CFG['tab_char'] })
-      elseif cur_char == nl_str then
-        table.insert(ws_marks, { cur_row, cur_col, CFG['nl_char'] })
+        In cases 2 and 3, we can get a substring to the
+        end column which the start column is always inside of, e.g.
+        1 to ecol, so that we can continue using string.find().
+      ]]
+      if (adjusted_ecol ~= line_len) then
+        line_text = line_text:sub(1, adjusted_ecol)
       end
+    else
+      adjusted_scol = scol
     end
+
+    -- process columns of current line
+    repeat
+      adjusted_scol, _, match_char = string.find(line_text, "([ \t" .. nl_str .. "])", adjusted_scol)
+
+      if adjusted_scol then
+        if match_char == ' ' then
+          match_char = CFG['space_char']
+        elseif match_char == '\n' then
+          match_char = CFG['nl_char']
+        else
+          match_char = CFG['tab_char']
+        end
+
+        table.insert(ws_marks, { cur_row, adjusted_scol, match_char })
+
+        adjusted_scol = adjusted_scol + 1
+      end
+    until not adjusted_scol
   end
 
   return ws_marks
