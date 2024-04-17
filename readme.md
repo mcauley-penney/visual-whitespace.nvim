@@ -1,4 +1,4 @@
-# 🔎 visual-whitespace.nvim 
+# 🔎 visual-whitespace.nvim
 
 Reveal whitespace characters in visual mode, similar to VSCode.
 
@@ -25,7 +25,8 @@ To install it with the default settings using Lazy:
      highlight = { link = 'Visual' },
      space_char = '·',
      tab_char = '→',
-     nl_char = '↲'
+     nl_char = '↲',
+     cr_char = '←'
     },
 ```
 

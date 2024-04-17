@@ -7,7 +7,8 @@ local CFG = {
   highlight = { link = "Visual" },
   space_char = '·',
   tab_char = '→',
-  nl_char = '↲'
+  nl_char = '↲',
+  cr_char = '←'
 }
 
 
@@ -78,18 +79,24 @@ local function get_marks(s_pos, e_pos, mode)
 
     -- process columns of current line
     repeat
-      adjusted_scol, _, match_char = string.find(line_text, "([ \t" .. nl_str .. "])", adjusted_scol)
+      adjusted_scol, _, match_char = string.find(line_text, "([ \t\r\n])", adjusted_scol)
 
       if adjusted_scol then
         if match_char == ' ' then
           match_char = CFG['space_char']
+        elseif match_char == '\r' then
+          match_char = CFG['cr_char']
         elseif match_char == '\n' then
           match_char = CFG['nl_char']
         else
           match_char = CFG['tab_char']
         end
 
-        table.insert(ws_marks, { cur_row, adjusted_scol, match_char })
+        if ff == 'dos' and line_len == adjusted_scol then
+          table.insert(ws_marks, { cur_row, 0, match_char, "eol" })
+        else
+          table.insert(ws_marks, { cur_row, adjusted_scol, match_char, "overlay" })
+        end
 
         adjusted_scol = adjusted_scol + 1
       end
@@ -103,7 +110,7 @@ local function apply_marks(mark_table)
   for _, mark_data in ipairs(mark_table) do
     api.nvim_buf_set_extmark(0, NS_ID, mark_data[1] - 1, mark_data[2] - 1, {
       virt_text = { { mark_data[3], 'VisualNonText' } },
-      virt_text_pos = 'overlay',
+      virt_text_pos = mark_data[4],
     })
   end
 end
