@@ -10,6 +10,7 @@ local CFG = {
   nl_char = '↲',
   cr_char = '←'
 }
+local CHAR_LOOKUP
 
 
 local function get_charwise_pos(s_pos, e_pos)
@@ -82,20 +83,10 @@ local function get_marks(s_pos, e_pos, mode)
       adjusted_scol, _, match_char = string.find(line_text, "([ \t\r\n])", adjusted_scol)
 
       if adjusted_scol then
-        if match_char == ' ' then
-          match_char = CFG['space_char']
-        elseif match_char == '\r' then
-          match_char = CFG['cr_char']
-        elseif match_char == '\n' then
-          match_char = CFG['nl_char']
-        else
-          match_char = CFG['tab_char']
-        end
-
         if ff == 'dos' and line_len == adjusted_scol then
-          table.insert(ws_marks, { cur_row, 0, match_char, "eol" })
+          table.insert(ws_marks, { cur_row, 0, CHAR_LOOKUP[match_char], "eol" })
         else
-          table.insert(ws_marks, { cur_row, adjusted_scol, match_char, "overlay" })
+          table.insert(ws_marks, { cur_row, adjusted_scol, CHAR_LOOKUP[match_char], "overlay" })
         end
 
         adjusted_scol = adjusted_scol + 1
@@ -144,6 +135,12 @@ end
 
 M.setup = function(user_cfg)
   CFG = vim.tbl_extend('force', CFG, user_cfg or {})
+  CHAR_LOOKUP = {
+    [' '] = CFG['space_char'],
+    ['\t'] = CFG['tab_char'],
+    ['\n'] = CFG['nl_char'],
+    ['\r'] = CFG['cr_char']
+  }
 
   api.nvim_set_hl(0, 'VisualNonText', CFG['highlight'])
 end
