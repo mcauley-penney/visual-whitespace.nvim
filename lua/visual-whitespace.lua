@@ -13,30 +13,13 @@ local CFG = {
 local CHAR_LOOKUP
 
 
-local function get_charwise_pos(s_pos, e_pos)
-  local srow, scol = s_pos[2], s_pos[3]
-  local erow, ecol = e_pos[2], e_pos[3]
-  s_pos = { srow, scol }
-  e_pos = { erow, ecol }
+local function get_normalized_pos(s_pos, e_pos, mode)
+  local pos_list = fn.getregionpos(s_pos, e_pos, { type = mode, eol = true })
 
-  -- reverse condition, i.e. visual mode moving up the buffer
-  if srow > erow or (srow == erow and scol >= ecol) then
-    s_pos, e_pos = e_pos, s_pos
-  end
+  s_pos = { pos_list[1][1][2], pos_list[1][1][3] }
+  e_pos = { pos_list[#pos_list][2][2], pos_list[#pos_list][2][3] }
 
   return s_pos, e_pos
-end
-
-local function get_linewise_pos(s_pos, e_pos)
-  local srow, scol = s_pos[2], 1
-  local erow, ecol = e_pos[2], vim.v.maxcol
-
-  -- reverse condition; start pos = srow, maxcol; end pos = erow, 1
-  if srow > erow then
-    srow, erow = erow, srow
-  end
-
-  return { srow, scol }, { erow, ecol }
 end
 
 local function get_marks(s_pos, e_pos, mode)
@@ -50,6 +33,7 @@ local function get_marks(s_pos, e_pos, mode)
 
   local line_text, line_len, adjusted_scol, adjusted_ecol, match_char
   local ws_marks = {}
+
   for cur_row = srow, erow do
     -- gets the physical line, not the display line
     line_text = table.concat { text[cur_row - srow + 1], nl_str }
@@ -120,11 +104,7 @@ M.highlight_ws = function()
   local s_pos = fn.getpos('v')
   local e_pos = fn.getpos('.')
 
-  if cur_mode == 'v' then
-    s_pos, e_pos = get_charwise_pos(s_pos, e_pos)
-  else
-    s_pos, e_pos = get_linewise_pos(s_pos, e_pos)
-  end
+  s_pos, e_pos = get_normalized_pos(s_pos, e_pos, cur_mode)
 
   M.clear_ws_hl()
 
