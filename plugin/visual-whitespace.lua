@@ -4,7 +4,7 @@ local augrp = vim.api.nvim_create_augroup("VisualWhitespace", { clear = true })
 
 aucmd("ModeChanged", {
   group = augrp,
-  pattern = "*:[vV]",
+  pattern = "*:[vV\22]",
   callback = match_vis.highlight_ws
 })
 
@@ -17,6 +17,6 @@ aucmd("CursorMoved", {
 
 aucmd("ModeChanged", {
   group = augrp,
-  pattern = "[vV]:*",
+  pattern = "[vV\22]:*",
   callback = match_vis.clear_ws_hl
 })

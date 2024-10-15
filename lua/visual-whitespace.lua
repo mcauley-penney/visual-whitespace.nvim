@@ -13,69 +13,59 @@ local CFG = {
 local CHAR_LOOKUP
 
 
-local function get_normalized_pos(s_pos, e_pos, mode)
-  local pos_list = fn.getregionpos(s_pos, e_pos, { type = mode, eol = true })
+local function get_normalized_pos_list(mode)
+  local pos_list = fn.getregionpos(fn.getpos('v'), fn.getpos('.'), { type = mode, eol = true })
 
-  s_pos = { pos_list[1][1][2], pos_list[1][1][3] }
-  e_pos = { pos_list[#pos_list][2][2], pos_list[#pos_list][2][3] }
+  for _, pos in ipairs(pos_list) do
+    if pos[1][4] > 0 then
+      local new_pos = pos[1][3] + pos[1][4]
+      pos[1][3] = new_pos
+      pos[2][3] = new_pos
+    end
+  end
 
-  return s_pos, e_pos
+  return pos_list
 end
 
-local function get_marks(s_pos, e_pos, mode)
+local function get_marks(pos_list)
   local ff = vim.bo.fileformat
   local nl_str = ff == 'unix' and '\n' or ff == 'mac' and '\r' or '\r\n'
 
-  local srow, scol = s_pos[1], s_pos[2]
-  local erow, ecol = e_pos[1], e_pos[2]
+  local s_row = pos_list[1][1][2]
+  local e_row = pos_list[#pos_list][1][2]
 
-  local text = api.nvim_buf_get_lines(0, srow - 1, erow, true)
+  local text = api.nvim_buf_get_lines(0, s_row - 1, e_row, true)
 
-  local line_text, line_len, adjusted_scol, adjusted_ecol, match_char
+  for i = 1, #text do
+    text[i] = table.concat({ text[i], nl_str })
+  end
+
   local ws_marks = {}
+  local cur_row, line_text, line_len, match_char, start_idx, end_idx
 
-  for cur_row = srow, erow do
-    -- gets the physical line, not the display line
-    line_text = table.concat { text[cur_row - srow + 1], nl_str }
+  for _, pos_pair in ipairs(pos_list) do
+    cur_row = pos_pair[1][2]
+    start_idx = pos_pair[1][3]
+    end_idx = pos_pair[2][3]
+
+    line_text = table.concat({ text[cur_row - s_row + 1], nl_str })
     line_len = #line_text
 
-    -- adjust start_col and end_col for partial line selections
-    if mode == 'v' then
-      adjusted_scol = (cur_row == srow) and scol or 1
-      adjusted_ecol = (cur_row == erow) and ecol or line_len
+    if start_idx < line_len then
+      repeat
+        start_idx, _, match_char = string.find(line_text, "([ \t\r\n])", start_idx)
 
-      --[[
-        There are four ranges to manage:
-          1. start to end
-          2. start to middle
-          3. middle to middle
-          4. middle to end
+        if start_idx and start_idx <= end_idx then
+          if ff == 'dos' and line_len == start_idx then
+            table.insert(ws_marks, { cur_row, 0, CHAR_LOOKUP[match_char], "eol" })
+          else
+            table.insert(ws_marks, { cur_row, start_idx, CHAR_LOOKUP[match_char], "overlay" })
+          end
 
-        In cases 2 and 3, we can get a substring to the
-        end column which the start column is always inside of, e.g.
-        1 to ecol, so that we can continue using string.find().
-      ]]
-      if (adjusted_ecol ~= line_len) then
-        line_text = line_text:sub(1, adjusted_ecol)
-      end
-    else
-      adjusted_scol = scol
-    end
-
-    -- process columns of current line
-    repeat
-      adjusted_scol, _, match_char = string.find(line_text, "([ \t\r\n])", adjusted_scol)
-
-      if adjusted_scol then
-        if ff == 'dos' and line_len == adjusted_scol then
-          table.insert(ws_marks, { cur_row, 0, CHAR_LOOKUP[match_char], "eol" })
-        else
-          table.insert(ws_marks, { cur_row, adjusted_scol, CHAR_LOOKUP[match_char], "overlay" })
+          start_idx = start_idx + 1
         end
-
-        adjusted_scol = adjusted_scol + 1
-      end
-    until not adjusted_scol
+      until start_idx == nil or start_idx > end_idx
+    end
   end
 
   return ws_marks
@@ -97,18 +87,15 @@ end
 M.highlight_ws = function()
   local cur_mode = fn.mode()
 
-  if cur_mode ~= 'v' and cur_mode ~= 'V' then
+  if cur_mode ~= 'v' and cur_mode ~= 'V' and cur_mode ~= '\22' then
     return
   end
 
-  local s_pos = fn.getpos('v')
-  local e_pos = fn.getpos('.')
-
-  s_pos, e_pos = get_normalized_pos(s_pos, e_pos, cur_mode)
-
   M.clear_ws_hl()
 
-  local marks = get_marks(s_pos, e_pos, cur_mode)
+  local pos_list = get_normalized_pos_list(cur_mode)
+
+  local marks = get_marks(pos_list)
 
   apply_marks(marks)
 end
