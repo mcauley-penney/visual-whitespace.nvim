@@ -103,11 +103,19 @@ local highlight_ws = function()
   apply_marks(marks)
 end
 
-local function init()
+local function init_aucmds()
   if CFG.enabled then
     aucmd("ModeChanged", {
       group = augrp,
       pattern = "*:[vV\22]",
+      callback = function()
+        return highlight_ws()
+      end
+    })
+
+    aucmd("ModeChanged", {
+      group = augrp,
+      pattern = "[vV\22]:[vV\22]",
       callback = function()
         return highlight_ws()
       end
@@ -122,7 +130,7 @@ local function init()
 
     aucmd("ModeChanged", {
       group = augrp,
-      pattern = "[vV\22]:*",
+      pattern = "[vV\22]:[^vV\22]",
       callback = function()
         return clear_ws_hl()
       end
@@ -135,7 +143,7 @@ end
 M.toggle = function()
   CFG.enabled = not CFG.enabled
 
-  init()
+  init_aucmds()
 
   if not CFG.enabled then
     vim.notify("visual-whitespace disabled", vim.log.levels.WARN, { title = "visual-whitespace" })
@@ -155,7 +163,7 @@ M.setup = function(user_cfg)
 
   api.nvim_set_hl(0, 'VisualNonText', CFG['highlight'])
 
-  init()
+  init_aucmds()
 end
 
 
