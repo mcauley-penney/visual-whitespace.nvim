@@ -6,15 +6,14 @@ Reveal whitespace characters in visual mode, similar to VSCode.
 
 <sub>GIF: Highlighting in charwise-visual and linewise-visual</sub>
 
-
 ## Installation and configuration
 
-To install it with the default settings using Lazy:
+visual-whitespace does not require initialization. To install it with the default settings using Lazy, you can provide nothing or, optionally, `config = true`:
 
 ```lua
   {
-   'mcauley-penney/visual-whitespace.nvim',
-    config = true
+    'mcauley-penney/visual-whitespace.nvim',
+    -- config = true
   }
 ```
 
@@ -22,12 +21,27 @@ To install it with the default settings using Lazy:
 
 ```lua
     opts = {
-     highlight = { link = 'Visual' },
-     space_char = '·',
-     tab_char = '→',
-     nl_char = '↲',
-     cr_char = '←'
+      highlight = { link = 'Visual' },
+      space_char = '·',
+      tab_char = '→',
+      nl_char = '↲',
+      cr_char = '←'
+      enabled = true
     },
+```
+
+visual-whitespace affords the following user-facing functions:
+
+| Lua                                     | Description                                                      |
+| --------------------------------------- | ---------------------------------------------------------------- |
+| `require("visual-whitespace").toggle()` | Turn visual-whitespace.nvim off (toggles the `enabled` cfg flag) |
+
+Use them in keymaps like:
+
+```lua
+init = function()
+    vim.keymap.set('n', "<leader>vw", require("visual-whitespace").toggle, {})
+end
 ```
 
 ## Credit
