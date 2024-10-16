@@ -187,6 +187,8 @@ M.setup = function(user_cfg)
   }
 
   api.nvim_set_hl(0, 'VisualNonText', CFG['highlight'])
+
+  init()
 end
 
 
