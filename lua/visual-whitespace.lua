@@ -1,5 +1,7 @@
 local api = vim.api
 local fn = vim.fn
+local aucmd = api.nvim_create_autocmd
+local augrp = api.nvim_create_augroup("VisualWhitespace", { clear = true })
 
 local M = {}
 local NS_ID = api.nvim_create_namespace('VisualWhitespace')
@@ -8,7 +10,8 @@ local CFG = {
   space_char = '·',
   tab_char = '→',
   nl_char = '↲',
-  cr_char = '←'
+  cr_char = '←',
+  enabled = true
 }
 local CHAR_LOOKUP
 
@@ -80,24 +83,65 @@ local function apply_marks(mark_table)
   end
 end
 
-M.clear_ws_hl = function()
+local clear_ws_hl = function()
   api.nvim_buf_clear_namespace(0, NS_ID, 0, -1)
 end
 
-M.highlight_ws = function()
+local highlight_ws = function()
   local cur_mode = fn.mode()
 
   if cur_mode ~= 'v' and cur_mode ~= 'V' and cur_mode ~= '\22' then
     return
   end
 
-  M.clear_ws_hl()
+  clear_ws_hl()
 
   local pos_list = get_normalized_pos_list(cur_mode)
 
   local marks = get_marks(pos_list)
 
   apply_marks(marks)
+end
+
+local function init()
+  if CFG.enabled then
+    aucmd("ModeChanged", {
+      group = augrp,
+      pattern = "*:[vV\22]",
+      callback = function()
+        return highlight_ws()
+      end
+    })
+
+    aucmd("CursorMoved", {
+      group = augrp,
+      callback = function()
+        return vim.schedule(highlight_ws)
+      end
+    })
+
+    aucmd("ModeChanged", {
+      group = augrp,
+      pattern = "[vV\22]:*",
+      callback = function()
+        return clear_ws_hl()
+      end
+    })
+  else
+    vim.api.nvim_clear_autocmds({ group = augrp })
+  end
+end
+
+M.toggle = function()
+  CFG.enabled = not CFG.enabled
+
+  init()
+
+  if not CFG.enabled then
+    vim.notify("visual-whitespace disabled", vim.log.levels.WARN, { title = "visual-whitespace" })
+  else
+    vim.notify("visual-whitespace enabled", vim.log.levels.INFO, { title = "visual-whitespace" })
+  end
 end
 
 M.setup = function(user_cfg)
