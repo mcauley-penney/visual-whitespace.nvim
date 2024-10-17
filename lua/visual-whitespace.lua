@@ -140,7 +140,7 @@ local function init_aucmds()
   if CFG.enabled then
     aucmd("ModeChanged", {
       group = augrp,
-      pattern = "*:[vV\22]",
+      pattern = "*:[vV]",
       callback = function()
         return highlight_ws()
       end
@@ -148,7 +148,7 @@ local function init_aucmds()
 
     aucmd("ModeChanged", {
       group = augrp,
-      pattern = "[vV\22]:[vV\22]",
+      pattern = "[vV]:[vV]",
       callback = function()
         return highlight_ws()
       end
@@ -163,7 +163,7 @@ local function init_aucmds()
 
     aucmd("ModeChanged", {
       group = augrp,
-      pattern = "[vV\22]:[^vV\22]",
+      pattern = "[vV]:[^vV]",
       callback = function()
         return clear_ws_hl()
       end
