@@ -146,14 +146,6 @@ local function init_aucmds()
       end
     })
 
-    aucmd("ModeChanged", {
-      group = augrp,
-      pattern = "[vV]:[vV]",
-      callback = function()
-        return highlight_ws()
-      end
-    })
-
     aucmd("CursorMoved", {
       group = augrp,
       callback = function()
