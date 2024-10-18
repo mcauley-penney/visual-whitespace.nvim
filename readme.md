@@ -21,12 +21,16 @@ visual-whitespace does not require initialization. To install it with the defaul
 
 ```lua
     opts = {
-      highlight = { link = 'Visual' },
+      highlight = { link = "Visual" },
       space_char = '·',
       tab_char = '→',
       nl_char = '↲',
-      cr_char = '←'
-      enabled = true
+      cr_char = '←',
+      enabled = true,
+      excluded = {
+        filetypes = {},
+        buftypes = {}
+      }
     },
 ```
 
