@@ -1,8 +1,7 @@
 local api = vim.api
 local fn = vim.fn
 local aucmd = api.nvim_create_autocmd
-local hl_augrp = api.nvim_create_augroup("VisualWhitespaceHL", { clear = true })
-local core_augrp = api.nvim_create_augroup("VisualWhitespace", { clear = true })
+local augrp = api.nvim_create_augroup("VisualWhitespace", { clear = true })
 
 local M = {}
 local NS_ID = api.nvim_create_namespace('VisualWhitespace')
@@ -12,11 +11,7 @@ local CFG = {
   tab_char = '→',
   nl_char = '↲',
   cr_char = '←',
-  enabled = true,
-  excluded = {
-    filetypes = {},
-    buftypes = {}
-  }
+  enabled = true
 }
 local CHAR_LOOKUP
 
@@ -141,23 +136,10 @@ local highlight_ws = function()
   apply_marks(marks)
 end
 
-local function is_disabled_ft_bt()
-  local contains = vim.fn.has('nvim-0.10') == 1 and vim.list_contains or vim.tbl_contains
-
-  local bufnr = vim.api.nvim_get_current_buf()
-  local ft = vim.api.nvim_buf_get_option(bufnr, "filetype")
-  local bt = vim.api.nvim_buf_get_option(bufnr, "buftype")
-
-  local ft_list = CFG.excluded.filetypes or {}
-  local bt_list = CFG.excluded.buftypes or {}
-
-  return contains(ft_list, ft) or contains(bt_list, bt)
-end
-
 local function init_aucmds()
   if CFG.enabled then
     aucmd("ModeChanged", {
-      group = hl_augrp,
+      group = augrp,
       pattern = "*:[vV]",
       callback = function()
         return highlight_ws()
@@ -165,21 +147,21 @@ local function init_aucmds()
     })
 
     aucmd("CursorMoved", {
-      group = hl_augrp,
+      group = augrp,
       callback = function()
         return vim.schedule(highlight_ws)
       end
     })
 
     aucmd("ModeChanged", {
-      group = hl_augrp,
+      group = augrp,
       pattern = "[vV]:[^vV]",
       callback = function()
         return clear_ws_hl()
       end
     })
   else
-    vim.api.nvim_clear_autocmds({ group = hl_augrp })
+    vim.api.nvim_clear_autocmds({ group = augrp })
   end
 end
 
@@ -205,18 +187,6 @@ M.setup = function(user_cfg)
   }
 
   api.nvim_set_hl(0, 'VisualNonText', CFG['highlight'])
-
-  aucmd({ "WinEnter" }, {
-    group = core_augrp,
-    callback = function()
-      local prev_enabled = CFG.enabled
-      CFG.enabled = not is_disabled_ft_bt()
-
-      if prev_enabled ~= CFG.enabled then
-        init_aucmds()
-      end
-    end
-  })
 
   init_aucmds()
 end
