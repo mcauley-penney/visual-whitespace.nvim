@@ -34,6 +34,12 @@ visual-whitespace does not require initialization. To install it with the defaul
     },
 ```
 
+The highlight can also be set using the Nvim's Lua API:
+
+```lua
+vim.api.nvim_set_hl(0, "VisualNonText", { link = "Visual" })
+```
+
 visual-whitespace affords the following user-facing functions:
 
 | Lua                                     | Description                                                      |
