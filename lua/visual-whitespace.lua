@@ -204,7 +204,12 @@ M.setup = function(user_cfg)
     ['\r'] = CFG['cr_char']
   }
 
-  api.nvim_set_hl(0, 'VisualNonText', CFG['highlight'])
+  local global_highlight = api.nvim_get_hl(0, { name = 'VisualNonText' })
+  if not vim.tbl_isempty(global_highlight) then
+    api.nvim_set_hl(0, 'VisualNonText', global_highlight)
+  else
+    api.nvim_set_hl(0, 'VisualNonText', CFG['highlight'])
+  end
 
   aucmd({ "BufEnter", "WinEnter" }, {
     group = core_augrp,
