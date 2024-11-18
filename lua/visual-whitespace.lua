@@ -4,7 +4,7 @@ local aucmd = api.nvim_create_autocmd
 local hl_augrp = api.nvim_create_augroup("VisualWhitespaceHL", { clear = true })
 local core_augrp = api.nvim_create_augroup("VisualWhitespace", { clear = true })
 
-local M = { SETUP_CALLED = false }
+local M = {}
 local NS_ID = api.nvim_create_namespace('VisualWhitespace')
 local CFG = {
   highlight = { link = "Visual" },
@@ -196,12 +196,6 @@ M.toggle = function()
 end
 
 M.setup = function(user_cfg)
-  if M.setup_called then
-    return
-  end
-
-  M.setup_called = true
-
   CFG = vim.tbl_extend('force', CFG, user_cfg or {})
   CHAR_LOOKUP = {
     [' '] = CFG['space_char'],
