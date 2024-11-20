@@ -8,12 +8,12 @@ Reveal whitespace characters in visual mode, similar to VSCode.
 
 ## Installation and configuration
 
-visual-whitespace does not require initialization. To install it with the default settings using Lazy, you can provide nothing or, optionally, `config = true`:
+To install the plugin with the default settings using Lazy:
 
 ```lua
   {
     'mcauley-penney/visual-whitespace.nvim',
-    -- config = true
+    config = true
   }
 ```
 
@@ -21,15 +21,29 @@ visual-whitespace does not require initialization. To install it with the defaul
 
 ```lua
     opts = {
-      highlight = { link = 'Visual' },
+      highlight = { link = "Visual" },
       space_char = '·',
       tab_char = '→',
       nl_char = '↲',
-      cr_char = '←'
-      enabled = true
+      cr_char = '←',
+      enabled = true,
+      excluded = {
+        filetypes = {},
+        buftypes = {}
+      }
     },
 ```
 
+### Highlighting
+
+`visual-whitespace` defines the `VisualNonText` highlight group. In the configuration, the highlighting settings you provide will constitute this highlight group. The highlight can also be set using Neovim's Lua API:
+
+```lua
+-- vim.api.nvim_set_hl(0, "VisualNonText", { fg = "#5D5F71", bg = "#24282d"})
+-- vim.api.nvim_set_hl(0, "VisualNonText", { link = "Visual" })
+```
+
+### Functions
 visual-whitespace affords the following user-facing functions:
 
 | Lua                                     | Description                                                      |
