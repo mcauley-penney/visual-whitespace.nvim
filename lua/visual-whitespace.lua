@@ -92,7 +92,7 @@ local clear_ws_hl = function()
   api.nvim_buf_clear_namespace(0, NS_ID, 0, -1)
 end
 
-local highlight_ws = function()
+local conduct_ws_highlight = function()
   local cur_mode = fn.mode()
 
   if cur_mode ~= 'v' and cur_mode ~= 'V' and cur_mode ~= '\22' then
@@ -127,14 +127,18 @@ local function init_aucmds()
       group = hl_augrp,
       pattern = "*:[vV\22]",
       callback = function()
-        return highlight_ws()
+        if vim.o.operatorfunc ~= "" then
+          return
+        end
+
+        return conduct_ws_highlight()
       end
     })
 
     aucmd("CursorMoved", {
       group = hl_augrp,
       callback = function()
-        return vim.schedule(highlight_ws)
+        return vim.schedule(conduct_ws_highlight)
       end
     })
 
