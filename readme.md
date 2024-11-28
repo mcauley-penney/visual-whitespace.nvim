@@ -26,10 +26,7 @@ See [here](https://gist.github.com/digitaljhelms/4287848) for more information o
 To install the plugin with the default settings using Lazy:
 
 ```lua
-  {
-    'mcauley-penney/visual-whitespace.nvim',
-    config = true
-  }
+  { 'mcauley-penney/visual-whitespace.nvim' }
 ```
 
 `visual-whitespace` comes with the following options and defaults:
