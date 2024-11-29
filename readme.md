@@ -2,9 +2,24 @@
 
 Reveal whitespace characters in visual mode, similar to VSCode.
 
-![visual-ws](https://github.com/mcauley-penney/visual-whitespace.nvim/assets/59481467/89157048-1975-409c-977c-2d3fb43852d8)
+![vis-ws](https://github.com/user-attachments/assets/afa17c28-b5e3-4f4e-841c-0952975e7199)
 
-<sub>GIF: Highlighting in charwise-visual and linewise-visual</sub>
+<sub>GIF: Highlighting in linewise, charwise, and blockwise visual modes and playing nice with Treesitter incremental selection and [mini.move](https://github.com/echasnovski/mini.move)</sub>
+
+## Versions and support
+
+| Branch | Neovim Version Compatibility | Features |
+|---|---|---|
+| compat-nvim-0.10.2 | `<0.10.3` | - Charwise<br>- Linewise |
+| stable | `>=0.10.3` | - Charwise<br>- Linewise<br>- Blockwise |
+| main | `>=0.10.3` | - Charwise<br>- Linewise<br>- Blockwise<br>- Incremental Highlighting (much faster) |
+
+<!-- TODO: maybe we should say that this will only be supported by the community? I don't even want to develop bug fixes for this. -->
+- `compat-nvim-0.10.2` will receive bug fixes, documentation improvements, and new features from PRs as long as they are compatible with `Neovim < 0.10.3`, but the maintainer will not develop new features for this branch
+- `stable` will receive features from main
+- `main` is the primary development branch
+
+See [here](https://gist.github.com/digitaljhelms/4287848) for more information on this convention.
 
 ## Installation and configuration
 
@@ -17,7 +32,7 @@ To install the plugin with the default settings using Lazy:
   }
 ```
 
-`visual-whitespace` comes with the following default settings:
+`visual-whitespace` comes with the following options and defaults:
 
 ```lua
     opts = {
@@ -36,11 +51,11 @@ To install the plugin with the default settings using Lazy:
 
 ### Highlighting
 
-`visual-whitespace` defines the `VisualNonText` highlight group. In the configuration, the highlighting settings you provide will constitute this highlight group. The highlight can also be set using Neovim's Lua API:
+`visual-whitespace` defines the `VisualNonText` highlight group. In the configuration (shown above), the settings you provide in `highlight` will constitute this highlight group. The highlight can also be set using Neovim's Lua API, allowing for color schemes to support visual-whitespace:
 
 ```lua
--- vim.api.nvim_set_hl(0, "VisualNonText", { fg = "#5D5F71", bg = "#24282d"})
--- vim.api.nvim_set_hl(0, "VisualNonText", { link = "Visual" })
+-- This can go in your color scheme or in your plugin config
+vim.api.nvim_set_hl(0, "VisualNonText", { fg = "#5D5F71", bg = "#24282d"})
 ```
 
 ### Functions
