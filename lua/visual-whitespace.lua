@@ -7,7 +7,7 @@ local core_augrp = api.nvim_create_augroup("VisualWhitespace", { clear = true })
 local M = {}
 local NS_ID = api.nvim_create_namespace('VisualWhitespace')
 local CFG = {
-  highlight = { link = "Visual" },
+  highlight = { link = "Visual", default = true },
   space_char = '·',
   tab_char = '→',
   nl_char = '↲',
@@ -203,13 +203,7 @@ M.setup = function(user_cfg)
     ['\n'] = CFG['nl_char'],
     ['\r'] = CFG['cr_char']
   }
-
-  local global_highlight = api.nvim_get_hl(0, { name = 'VisualNonText' })
-  if not vim.tbl_isempty(global_highlight) then
-    api.nvim_set_hl(0, 'VisualNonText', global_highlight)
-  else
-    api.nvim_set_hl(0, 'VisualNonText', CFG['highlight'])
-  end
+  api.nvim_set_hl(0, 'VisualNonText', CFG['highlight'])
 
   aucmd({ "BufEnter", "WinEnter" }, {
     group = core_augrp,
