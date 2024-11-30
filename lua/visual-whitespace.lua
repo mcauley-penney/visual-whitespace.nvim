@@ -20,7 +20,7 @@ local NL_STRS = {
 local HL = "VisualNonText"
 local WS_PATTERN = "([ \t\r\n])"
 local CFG = {
-  highlight = { link = "Visual" },
+  highlight = { link = "Visual", default = true },
   space_char = '·',
   tab_char = '→',
   nl_char = '↲',
@@ -279,11 +279,7 @@ M.setup = function(user_cfg)
     ['\n'] = CFG['nl_char'],
     ['\r'] = CFG['cr_char']
   }
-
-  local global_highlight = api.nvim_get_hl(0, { name = HL })
-  if v.tbl_isempty(global_highlight) then
-    api.nvim_set_hl(0, HL, CFG['highlight'])
-  end
+  api.nvim_set_hl(0, 'VisualNonText', CFG['highlight'])
 
   aucmd({ "BufEnter", "WinEnter" }, {
     group = CORE_AUGRP,
