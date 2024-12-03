@@ -217,6 +217,13 @@ M.setup = function(user_cfg)
     end)
   })
 
+  aucmd({ "ColorScheme" }, {
+    group = core_augrp,
+    callback = function()
+      api.nvim_set_hl(0, 'VisualNonText', CFG['highlight'])
+    end
+  })
+
   init_aucmds()
 end
 
