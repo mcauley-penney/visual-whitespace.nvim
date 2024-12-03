@@ -205,7 +205,7 @@ M.setup = function(user_cfg)
   }
   api.nvim_set_hl(0, 'VisualNonText', CFG['highlight'])
 
-  aucmd({ "BufEnter", "WinEnter", "User" }, {
+  aucmd({ "BufEnter", "WinEnter" }, {
     group = core_augrp,
     callback = vim.schedule_wrap(function()
       local prev_enabled = CFG.enabled
@@ -216,8 +216,6 @@ M.setup = function(user_cfg)
       end
     end)
   })
-  -- Run the autocmd above on already existing buffer (when lazy loaded)
-  vim.api.nvim_exec_autocmds("User", { group = core_augrp })
 
   aucmd({ "ColorScheme" }, {
     group = core_augrp,
