@@ -108,7 +108,7 @@ local conduct_ws_highlight = function()
   apply_marks(marks)
 end
 
-local function is_disabled_ft_bt()
+local function is_enabled_ft_bt()
   local contains = vim.fn.has('nvim-0.10') == 1 and vim.list_contains or vim.tbl_contains
 
   local bufnr = vim.api.nvim_get_current_buf()
@@ -118,7 +118,7 @@ local function is_disabled_ft_bt()
   local ft_list = CFG.excluded.filetypes or {}
   local bt_list = CFG.excluded.buftypes or {}
 
-  return contains(ft_list, ft) or contains(bt_list, bt)
+  return not contains(ft_list, ft) and not contains(bt_list, bt)
 end
 
 local function init_aucmds()
@@ -180,7 +180,7 @@ M.setup = function(user_cfg)
     group = core_augrp,
     callback = vim.schedule_wrap(function()
       local prev_enabled = CFG.enabled
-      CFG.enabled = not is_disabled_ft_bt()
+      CFG.enabled = is_enabled_ft_bt()
 
       if prev_enabled ~= CFG.enabled then
         init_aucmds()
