@@ -11,7 +11,10 @@ Reveal whitespace characters in visual mode, similar to VSCode.
 To install the plugin with the default settings using Lazy:
 
 ```lua
-  { 'mcauley-penney/visual-whitespace.nvim' }
+  {
+    'mcauley-penney/visual-whitespace.nvim',
+    config = true
+  }
 ```
 
 `visual-whitespace` comes with the following default settings:
