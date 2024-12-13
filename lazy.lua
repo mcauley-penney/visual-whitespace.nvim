@@ -1,5 +1,5 @@
 return {
   "mcauley-penny/visual-whitespace.nvim",
   opts = {},
-  event = "BufEnter",
+  event = "ModeChanged *:[vV]",
 }
