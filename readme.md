@@ -8,15 +8,12 @@ Reveal whitespace characters in visual mode, similar to VSCode.
 
 ## Versions and support
 
-| Branch | Neovim Version Compatibility | Features |
-|---|---|---|
-| compat-nvim-0.10.2 | `<0.10.3` | - Charwise<br>- Linewise |
-| stable | `>=0.10.3` | - Charwise<br>- Linewise<br>- Blockwise |
-| main | `>=0.10.3` | - Charwise<br>- Linewise<br>- Blockwise<br>- Incremental Highlighting (much faster) |
+| Branch | Neovim Version Compatibility | Features                                                              |
+| ------ | ---------------------------- | --------------------------------------------------------------------- |
+| compat | `<0.11`                      | - Charwise<br>- Linewise                                              |
+| main   | `>=0.11`                     | - Charwise<br>- Linewise<br>- Blockwise<br>- Incremental Highlighting |
 
-<!-- TODO: maybe we should say that this will only be supported by the community? I don't even want to develop bug fixes for this. -->
-- `compat-nvim-0.10.2` will receive bug fixes, documentation improvements, and new features from PRs as long as they are compatible with `Neovim < 0.10.3`, but the maintainer will not develop new features for this branch
-- `stable` will receive features from main
+- `compat` will receive bug fixes, documentation improvements, and new features from PRs as long as they are compatible with `Neovim < 0.11`, but the maintainer will not develop new features for this branch
 - `main` is the primary development branch
 
 See [here](https://gist.github.com/digitaljhelms/4287848) for more information on this convention.
@@ -29,6 +26,7 @@ To install the plugin with the default settings using Lazy:
   {
     'mcauley-penney/visual-whitespace.nvim',
     config = true
+    -- keys = { 'v', 'V', '<C-v>' }, -- optionally, lazy load on visual mode keys
   }
 ```
 
@@ -59,6 +57,7 @@ vim.api.nvim_set_hl(0, "VisualNonText", { fg = "#5D5F71", bg = "#24282d"})
 ```
 
 ### Functions
+
 visual-whitespace affords the following user-facing functions:
 
 | Lua                                     | Description                                                      |
@@ -75,5 +74,5 @@ end
 
 ## Credit
 
-- [This post on the Neovim subreddit](https://www.reddit.com/r/neovim/comments/1b1sv3a/function_to_get_visually_selected_text/), for doing a lot of the math for me
+- [This post on the Neovim subreddit](https://www.reddit.com/r/neovim/comments/1b1sv3a/function_to_get_visually_selected_text/), for the logic for the original implementation
 - [aaron-p1/match-visual.nvim](https://github.com/aaron-p1/match-visual.nvim)
