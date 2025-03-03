@@ -12,6 +12,7 @@ local CFG = {
   tab_char = '→',
   nl_char = '↲',
   cr_char = '←',
+  nbsp_char = '␣',
   enabled = true,
   excluded = {
     filetypes = {},
@@ -88,7 +89,7 @@ local function get_marks(s_pos, e_pos, mode)
 
     -- process columns of current line
     repeat
-      adjusted_scol, _, match_char = string.find(line_text, "([ \t\r\n])", adjusted_scol)
+      adjusted_scol, _, match_char = string.find(line_text, "([ \194\t\r\n])", adjusted_scol)
 
       if adjusted_scol then
         if ff == 'dos' and line_len == adjusted_scol then
@@ -199,6 +200,7 @@ M.setup = function(user_cfg)
   CFG = vim.tbl_extend('force', CFG, user_cfg or {})
   CHAR_LOOKUP = {
     [' '] = CFG['space_char'],
+    ['\194'] = CFG['nbsp_char'],
     ['\t'] = CFG['tab_char'],
     ['\n'] = CFG['nl_char'],
     ['\r'] = CFG['cr_char']
