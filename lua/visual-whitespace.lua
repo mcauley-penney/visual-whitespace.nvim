@@ -12,7 +12,7 @@ local CFG = {
   tab_char = '→',
   nl_char = '↲',
   cr_char = '←',
-  nbsp_char = '⎵',
+  nbsp_char = '␣',
   enabled = true,
   excluded = {
     filetypes = {},
@@ -89,14 +89,13 @@ local function get_marks(s_pos, e_pos, mode)
 
     -- process columns of current line
     repeat
-      adjusted_scol, _, match_char = string.find(line_text, "([ \160\t\r\n])", adjusted_scol)
+      adjusted_scol, _, match_char = string.find(line_text, "([ \194\t\r\n])", adjusted_scol)
 
       if adjusted_scol then
         if ff == 'dos' and line_len == adjusted_scol then
           table.insert(ws_marks, { cur_row, 0, CHAR_LOOKUP[match_char], "eol" })
         else
-		  local offset = match_char == "\160" and 1 or 0 
-          table.insert(ws_marks, { cur_row, adjusted_scol - offset, CHAR_LOOKUP[match_char], "overlay" })
+          table.insert(ws_marks, { cur_row, adjusted_scol, CHAR_LOOKUP[match_char], "overlay" })
         end
 
         adjusted_scol = adjusted_scol + 1
@@ -201,7 +200,7 @@ M.setup = function(user_cfg)
   CFG = vim.tbl_extend('force', CFG, user_cfg or {})
   CHAR_LOOKUP = {
     [' '] = CFG['space_char'],
-    ['\160'] = CFG['nbsp_char'],
+    ['\194'] = CFG['nbsp_char'],
     ['\t'] = CFG['tab_char'],
     ['\n'] = CFG['nl_char'],
     ['\r'] = CFG['cr_char']
