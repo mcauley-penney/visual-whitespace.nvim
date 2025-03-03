@@ -18,13 +18,14 @@ local NL_STRS = {
   dos = '\r\n',
 }
 local HL = "VisualNonText"
-local WS_PATTERN = "([ \t\r\n])"
+local WS_PATTERN = "([ \194\t\r\n])"
 local CFG = {
   highlight = { link = "Visual", default = true },
   space_char = '·',
   tab_char = '→',
   nl_char = '↲',
   cr_char = '←',
+  nbsp_char = '␣',
   enabled = true,
   excluded = {
     filetypes = {},
@@ -275,6 +276,7 @@ M.setup = function(user_cfg)
   CFG = v.tbl_extend('force', CFG, user_cfg or {})
   CHAR_LOOKUP = {
     [' '] = CFG['space_char'],
+    ['\194'] = CFG['nbsp_char'],
     ['\t'] = CFG['tab_char'],
     ['\n'] = CFG['nl_char'],
     ['\r'] = CFG['cr_char']
