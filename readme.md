@@ -2,21 +2,28 @@
 
 Reveal whitespace characters in visual mode, similar to VSCode.
 
-![vis-ws](https://github.com/user-attachments/assets/afa17c28-b5e3-4f4e-841c-0952975e7199)
+![vsws](https://github.com/user-attachments/assets/c61f985b-f6ef-4686-9be7-c145b30bb64f)
 
-<sub>GIF: Highlighting in linewise, charwise, and blockwise visual modes and playing nice with Treesitter incremental selection and [mini.move](https://github.com/echasnovski/mini.move)</sub>
+
+<sub>GIF: Highlighting white spaces in linewise, blockwise, and charwise visual modes.</sub>
+
+## Description
+
+In VSCode, the `renderWhitespace` setting allows the user to choose how to display whitespace characters inside of the editor. There are a few different options, some of which Neovim also has. For example, you can choose to show whitespace all the time.
+
+One option that Neovim does not have that VSCode does is the `selection` option. This option for `renderWhitespace`, inspired by Sublime, allows the user to [see only whitespace that is under the current selection](https://github.com/microsoft/vscode/issues/1477) and is currently the [default setting](https://code.visualstudio.com/docs/reference/default-settings). 
+
+This plugin provides this ability inside of Neovim's visual/mouse selections, allowing you to see specific areas of whitespace only when you want to. 
 
 ## Versions and support
 
-| Branch | Neovim Version Compatibility | Features                                                              |
-| ------ | ---------------------------- | --------------------------------------------------------------------- |
-| compat | `<0.11`                      | - Charwise<br>- Linewise                                              |
-| main   | `>=0.11`                     | - Charwise<br>- Linewise<br>- Blockwise<br>- Incremental Highlighting |
+| Branch     | Neovim Version Compatibility | Features                                                              |
+| ---------- | ---------------------------- | --------------------------------------------------------------------- |
+| compat-v10 | `<0.11`                      | - Charwise<br>- Linewise                                              |
+| main       | `>=0.11`                     | - Charwise<br>- Linewise<br>- Blockwise<br>- Incremental Highlighting |
 
-- `compat` will receive bug fixes, documentation improvements, and new features from PRs as long as they are compatible with `Neovim < 0.11`, but the maintainer will not develop new features for this branch
+- `compat-v10` will receive bug fixes, documentation improvements, and new features from PRs as long as they are compatible with `Neovim < 0.11`, but the maintainer will not develop new features for this branch
 - `main` is the primary development branch
-
-See [here](https://gist.github.com/digitaljhelms/4287848) for more information on this convention.
 
 ## Installation and configuration
 
@@ -74,5 +81,5 @@ end
 
 ## Credit
 
-- [This post on the Neovim subreddit](https://www.reddit.com/r/neovim/comments/1b1sv3a/function_to_get_visually_selected_text/), for the logic for the original implementation
+- [This post on the Neovim subreddit](https://www.reddit.com/r/neovim/comments/1b1sv3a/function_to_get_visually_selected_text/), for some of the logic for the original implementation
 - [aaron-p1/match-visual.nvim](https://github.com/aaron-p1/match-visual.nvim)
