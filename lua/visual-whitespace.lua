@@ -266,6 +266,7 @@ M.toggle = function()
   init_aucmds()
 
   if not CFG.enabled then
+    clear_hl_ns()
     v.notify("visual-whitespace disabled", v.log.levels.WARN, { title = "visual-whitespace" })
   else
     v.notify("visual-whitespace enabled", v.log.levels.INFO, { title = "visual-whitespace" })
