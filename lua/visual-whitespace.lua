@@ -15,7 +15,7 @@ local LAST_RANGE = nil
 local NL_STRS = {
   unix = '\n',
   mac = '\r',
-  dos = '\r\n',
+  dos = '\r',
 }
 local HL = "VisualNonText"
 local WS_PATTERN = "([ \194\t\r\n])"
@@ -139,11 +139,7 @@ local function get_marks(pos_list)
 
       if not start_idx or start_idx > end_idx then goto continue end
 
-      if ff == 'dos' and line_len == start_idx then
-        table.insert(ws_marks, { cur_row, 0, CHAR_LOOKUP[match_char], "eol" })
-      else
-        table.insert(ws_marks, { cur_row, start_idx, CHAR_LOOKUP[match_char], "overlay" })
-      end
+      table.insert(ws_marks, { cur_row, start_idx, CHAR_LOOKUP[match_char], "overlay" })
 
       start_idx = start_idx + 1
       ::continue::
