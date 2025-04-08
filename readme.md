@@ -4,16 +4,28 @@ Reveal whitespace characters in visual mode, similar to VSCode.
 
 ![vsws](https://github.com/user-attachments/assets/c61f985b-f6ef-4686-9be7-c145b30bb64f)
 
-
 <sub>GIF: Highlighting white spaces in linewise, blockwise, and charwise visual modes.</sub>
 
 ## Description
 
 In VSCode, the `renderWhitespace` setting allows the user to choose how to display whitespace characters inside of the editor. There are a few different options, some of which Neovim also has. For example, you can choose to show whitespace all the time.
 
-One option that Neovim does not have that VSCode does is the `selection` option. This option for `renderWhitespace`, inspired by Sublime, allows the user to [see only whitespace that is under the current selection](https://github.com/microsoft/vscode/issues/1477) and is currently the [default setting](https://code.visualstudio.com/docs/reference/default-settings). 
+One option that Neovim does not have that VSCode does is the `selection` option. This option for `renderWhitespace`, inspired by Sublime, allows the user to [see only whitespace that is under the current selection](https://github.com/microsoft/vscode/issues/1477) and is currently the [default setting](https://code.visualstudio.com/docs/reference/default-settings).
 
-This plugin provides this ability inside of Neovim's visual/mouse selections, allowing you to see specific areas of whitespace only when you want to. 
+This plugin provides this ability inside of Neovim's visual/mouse selections, allowing you to see specific areas of whitespace only when you want to.
+
+## Features
+
+![vsws-features](https://github.com/user-attachments/assets/af2dda8d-35c3-4841-8fd2-f1768b8f97f3)
+
+<sub>GIF: Capturing tabs, non-breaking spaces, spaces, and line feed characters.</sub>
+
+visual-whitespace captures:
+  - spaces
+  - tabs
+  - non-breaking spaces
+  - new line chars, [unlike VSCode](https://github.com/microsoft/vscode/issues/12223)
+
 
 ## Versions and support
 
