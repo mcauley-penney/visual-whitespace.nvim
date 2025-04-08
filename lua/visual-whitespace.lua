@@ -185,11 +185,6 @@ local main = function()
 
   local pos_list = fn.getregionpos(fn.getpos('v'), fn.getpos('.'), { type = mode, eol = true })
 
-  for _, pos in ipairs(pos_list) do
-    pos[1][3] = pos[1][3] + pos[1][4]
-    pos[2][3] = pos[2][3] + pos[2][4]
-  end
-
   if not LAST_RANGE then
     local marks = get_marks(pos_list)
     set_marks(marks)
