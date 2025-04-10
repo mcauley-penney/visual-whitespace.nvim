@@ -241,7 +241,7 @@ local function init_aucmds()
 
     aucmd("ModeChanged", {
       group = HL_AUGRP,
-      pattern = "[vV\22]:[^vV\22]",
+      pattern = "[vV\22]*:[^vV\22]*",
       callback = function()
         return clear_hl_ns()
       end
