@@ -33,6 +33,9 @@ local CFG = {
   }
 }
 
+local function in_visual(mode)
+  return mode == 'v' or mode == 'V' or mode == '\22'
+end
 
 -- to expand, give (old_list, new_list)
 -- to remove, give (new_list, old_list)
@@ -178,8 +181,7 @@ end
 
 local main = function()
   local mode = fn.mode()
-
-  if mode ~= 'v' and mode ~= 'V' and mode ~= '\22' then
+  if not in_visual(mode) then
     return
   end
 
@@ -258,6 +260,7 @@ M.toggle = function()
     clear_hl_ns()
     v.notify("visual-whitespace disabled", v.log.levels.WARN, { title = "visual-whitespace" })
   else
+    main()
     v.notify("visual-whitespace enabled", v.log.levels.INFO, { title = "visual-whitespace" })
   end
 end
