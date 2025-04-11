@@ -206,8 +206,6 @@ local main = function()
 end
 
 local function is_enabled_ft_bt()
-  local contains = v.fn.has('nvim-0.10') == 1 and v.list_contains or v.tbl_contains
-
   local bufnr = v.api.nvim_get_current_buf()
   local ft = v.api.nvim_buf_get_option(bufnr, "filetype")
   local bt = v.api.nvim_buf_get_option(bufnr, "buftype")
@@ -215,7 +213,7 @@ local function is_enabled_ft_bt()
   local ft_list = CFG.excluded.filetypes or {}
   local bt_list = CFG.excluded.buftypes or {}
 
-  return not contains(ft_list, ft) and not contains(bt_list, bt)
+  return not v.tbl_contains(ft_list, ft) and not v.tbl_contains(bt_list, bt)
 end
 
 local function init_aucmds()
