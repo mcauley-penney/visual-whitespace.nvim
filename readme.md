@@ -87,7 +87,7 @@ Use them in keymaps like:
 
 ```lua
 init = function()
-    vim.keymap.set('n', "<leader>vw", require("visual-whitespace").toggle, {})
+    vim.keymap.set({ 'n', 'v' }, "<leader>tw", require("visual-whitespace").toggle, {})
 end
 ```
 
