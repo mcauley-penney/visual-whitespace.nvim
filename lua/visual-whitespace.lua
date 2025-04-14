@@ -19,6 +19,7 @@ local NL_STRS = {
 }
 local HL = "VisualNonText"
 local WS_PATTERN = "([ \194\t\r\n])"
+local ACTIVE_TYPE = false
 local CFG = {
   highlight = { link = "Visual", default = true },
   space_char = '·',
@@ -218,49 +219,63 @@ local function is_enabled_ft_bt()
   return not v.tbl_contains(ft_list, ft) and not v.tbl_contains(bt_list, bt)
 end
 
-local function init_aucmds()
-  if CFG.enabled then
-    aucmd("ModeChanged", {
-      group = HL_AUGRP,
-      pattern = "*:[vV\22]",
-      callback = function()
-        if v.o.operatorfunc ~= "" then
-          return
-        end
-
-        return main()
+local function enable_highlighting()
+  aucmd("ModeChanged", {
+    group = HL_AUGRP,
+    pattern = "*:[vV\22]",
+    callback = function()
+      if v.o.operatorfunc ~= "" then
+        return
       end
-    })
 
-    aucmd("CursorMoved", {
-      group = HL_AUGRP,
-      callback = function()
-        return v.schedule(main)
-      end
-    })
+      return main()
+    end
+  })
 
-    aucmd("ModeChanged", {
-      group = HL_AUGRP,
-      pattern = "[vV\22]*:[^vV\22]*",
-      callback = function()
-        return clear_hl_ns()
-      end
-    })
+  aucmd("CursorMoved", {
+    group = HL_AUGRP,
+    callback = function()
+      return v.schedule(main)
+    end
+  })
+
+  aucmd("ModeChanged", {
+    group = HL_AUGRP,
+    pattern = "[vV\22]*:[^vV\22]*",
+    callback = function()
+      return clear_hl_ns()
+    end
+  })
+end
+
+local function disable_highlighting()
+  clear_hl_ns()
+  vim.api.nvim_clear_autocmds({ group = HL_AUGRP })
+end
+
+local function recompute_active()
+  local active_now = CFG.enabled and is_enabled_ft_bt()
+  if active_now == ACTIVE_TYPE then
+    return
+  end
+
+  ACTIVE_TYPE = active_now
+  if ACTIVE_TYPE then
+    enable_highlighting()
+    main()
   else
-    v.api.nvim_clear_autocmds({ group = HL_AUGRP })
+    disable_highlighting()
   end
 end
 
 M.toggle = function()
   CFG.enabled = not CFG.enabled
 
-  init_aucmds()
-
   if not CFG.enabled then
-    clear_hl_ns()
+    disable_highlighting()
     v.notify("visual-whitespace disabled", v.log.levels.WARN, { title = "visual-whitespace" })
   else
-    main()
+    recompute_active()
     v.notify("visual-whitespace enabled", v.log.levels.INFO, { title = "visual-whitespace" })
   end
 end
@@ -276,16 +291,9 @@ M.setup = function(user_cfg)
   }
   api.nvim_set_hl(0, 'VisualNonText', CFG['highlight'])
 
-  aucmd({ "BufEnter", "WinEnter" }, {
+  aucmd({ "BufEnter", "WinEnter", "FileType" }, {
     group = CORE_AUGRP,
-    callback = v.schedule_wrap(function()
-      local prev_enabled = CFG.enabled
-      CFG.enabled = is_enabled_ft_bt()
-
-      if prev_enabled ~= CFG.enabled then
-        init_aucmds()
-      end
-    end)
+    callback = vim.schedule_wrap(recompute_active),
   })
 
   aucmd({ "ColorScheme" }, {
@@ -295,7 +303,7 @@ M.setup = function(user_cfg)
     end
   })
 
-  init_aucmds()
+  recompute_active()
 end
 
 
