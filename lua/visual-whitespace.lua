@@ -13,9 +13,9 @@ local CORE_AUGRP = api.nvim_create_augroup("VisualWhitespace", { clear = true })
 local CHAR_LOOKUP = nil
 local LAST_RANGE = nil
 local NL_STRS = {
-  unix = '\n',
-  mac = '\r',
-  dos = '\r',
+  unix = nil,
+  mac = nil,
+  dos = nil,
 }
 local HL = "VisualNonText"
 local WS_PATTERN = "([ \194\t\r\n])"
@@ -24,8 +24,9 @@ local CFG = {
   highlight = { link = "Visual", default = true },
   space_char = '·',
   tab_char = '→',
-  nl_char = '↲',
-  cr_char = '←',
+  unix_char = '↲',
+  mac_char = '←',
+  dos_char = '↙',
   nbsp_char = '␣',
   enabled = true,
   excluded = {
@@ -114,13 +115,13 @@ local function diff_pos_lists(old, new)
 end
 
 local function get_marks(pos_list)
-  local ff = v.bo.fileformat
-  local nl_str = NL_STRS[ff]
+  local ff = vim.bo.fileformat
+  local nl_char = NL_STRS[ff]
 
   local s_row = pos_list[1][1][2]
   local e_row = pos_list[#pos_list][1][2]
 
-  local text = api.nvim_buf_get_lines(0, s_row - 1, e_row, true)
+  local text = vim.api.nvim_buf_get_lines(0, s_row - 1, e_row, true)
 
   local ws_marks = {}
   local cur_row, line_text, line_len, match_char, start_idx, end_idx
@@ -133,10 +134,7 @@ local function get_marks(pos_list)
     line_text = text[cur_row - s_row + 1]
     line_len = #line_text
 
-    if end_idx > line_len then
-      line_text = table.concat({ text[cur_row - s_row + 1], nl_str })
-      line_len = line_len + #nl_str
-    end
+    local visual_end = math.min(end_idx, line_len)
 
     repeat
       start_idx, _, match_char = string.find(line_text, WS_PATTERN, start_idx)
@@ -147,7 +145,11 @@ local function get_marks(pos_list)
 
       start_idx = start_idx + 1
       ::continue::
-    until not start_idx or start_idx > end_idx
+    until not start_idx or start_idx > visual_end
+
+    if end_idx > line_len then
+      table.insert(ws_marks, { cur_row, line_len + 1, nl_char, "overlay" })
+    end
   end
 
   return ws_marks
@@ -286,9 +288,13 @@ M.setup = function(user_cfg)
     [' '] = CFG['space_char'],
     ['\194'] = CFG['nbsp_char'],
     ['\t'] = CFG['tab_char'],
-    ['\n'] = CFG['nl_char'],
-    ['\r'] = CFG['cr_char']
   }
+  NL_STRS = {
+    unix = CFG['unix_char'],
+    mac = CFG['mac_char'],
+    dos = CFG['dos_char']
+  }
+
   api.nvim_set_hl(0, HL, CFG['highlight'])
 
   aucmd({ "BufEnter", "WinEnter", "FileType" }, {

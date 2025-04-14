@@ -23,12 +23,13 @@ To install the plugin with the default settings using Lazy:
 
 ```lua
     opts = {
+      enabled = true,
       highlight = { link = "Visual" },
       space_char = '·',
       tab_char = '→',
-      nl_char = '↲',
-      cr_char = '←',
-      enabled = true,
+      unix_char = '↲',
+      mac_char = '←',
+      dos_char = '↙',
       excluded = {
         filetypes = {},
         buftypes = {}
