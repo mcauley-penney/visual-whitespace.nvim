@@ -289,7 +289,7 @@ M.setup = function(user_cfg)
     ['\n'] = CFG['nl_char'],
     ['\r'] = CFG['cr_char']
   }
-  api.nvim_set_hl(0, 'VisualNonText', CFG['highlight'])
+  api.nvim_set_hl(0, HL, CFG['highlight'])
 
   aucmd({ "BufEnter", "WinEnter", "FileType" }, {
     group = CORE_AUGRP,
@@ -299,7 +299,7 @@ M.setup = function(user_cfg)
   aucmd({ "ColorScheme" }, {
     group = CORE_AUGRP,
     callback = function()
-      api.nvim_set_hl(0, 'VisualNonText', CFG['highlight'])
+      api.nvim_set_hl(0, HL, CFG['highlight'])
     end
   })
 
