@@ -6,37 +6,6 @@ Reveal whitespace characters in visual mode, similar to VSCode.
 
 <sub>GIF: Highlighting white spaces in linewise, blockwise, and charwise visual modes.</sub>
 
-## Description
-
-In VSCode, the `renderWhitespace` setting allows the user to choose how to display whitespace characters inside of the editor. There are a few different options, some of which Neovim also has. For example, you can choose to show whitespace all the time.
-
-One option that Neovim does not have that VSCode does is the `selection` option. This option for `renderWhitespace`, inspired by Sublime, allows the user to [see only whitespace that is under the current selection](https://github.com/microsoft/vscode/issues/1477) and is currently the [default setting](https://code.visualstudio.com/docs/reference/default-settings).
-
-This plugin provides this ability inside of Neovim's visual/mouse selections, allowing you to see specific areas of whitespace only when you want to.
-
-## Features
-
-![vsws-features](https://github.com/user-attachments/assets/af2dda8d-35c3-4841-8fd2-f1768b8f97f3)
-
-<sub>GIF: Capturing tabs, non-breaking spaces, spaces, and line feed characters.</sub>
-
-visual-whitespace captures:
-  - spaces
-  - tabs
-  - non-breaking spaces
-  - new line chars, [unlike VSCode](https://github.com/microsoft/vscode/issues/12223)
-
-
-## Versions and support
-
-| Branch     | Neovim Version Compatibility | Features                                                              |
-| ---------- | ---------------------------- | --------------------------------------------------------------------- |
-| compat-v10 | `<0.11`                      | - Charwise<br>- Linewise                                              |
-| main       | `>=0.11`                     | - Charwise<br>- Linewise<br>- Blockwise<br>- Incremental Highlighting |
-
-- `compat-v10` will receive bug fixes, documentation improvements, and new features from PRs as long as they are compatible with `Neovim < 0.11`, but the maintainer will not develop new features for this branch
-- `main` is the primary development branch
-
 ## Installation and configuration
 
 To install the plugin with the default settings using Lazy:
@@ -44,8 +13,9 @@ To install the plugin with the default settings using Lazy:
 ```lua
   {
     'mcauley-penney/visual-whitespace.nvim',
-    config = true
-    -- keys = { 'v', 'V', '<C-v>' }, -- optionally, lazy load on visual mode keys
+    config = true,
+    event = "ModeChanged *:[vV\22]", -- optionally, lazy load on entering visual mode
+    opts = {},
   }
 ```
 
@@ -90,6 +60,39 @@ init = function()
     vim.keymap.set({ 'n', 'v' }, "<leader>tw", require("visual-whitespace").toggle, {})
 end
 ```
+
+## Info
+
+### Description
+
+In VSCode, the `renderWhitespace` setting allows the user to choose how to display whitespace characters inside of the editor. There are a few different options, some of which Neovim also has. For example, you can choose to show whitespace all the time.
+
+One option that Neovim does not have that VSCode does is the `selection` option. This option for `renderWhitespace`, inspired by Sublime, allows the user to [see only whitespace that is under the current selection](https://github.com/microsoft/vscode/issues/1477) and is currently the [default setting](https://code.visualstudio.com/docs/reference/default-settings).
+
+This plugin provides this ability inside of Neovim's visual/mouse selections, allowing you to see specific areas of whitespace only when you want to.
+
+### Features
+
+![vsws-features](https://github.com/user-attachments/assets/af2dda8d-35c3-4841-8fd2-f1768b8f97f3)
+
+<sub>GIF: Capturing tabs, non-breaking spaces, spaces, and line feed characters.</sub>
+
+visual-whitespace captures:
+
+- spaces
+- tabs
+- non-breaking spaces
+- new line chars, [unlike VSCode](https://github.com/microsoft/vscode/issues/12223)
+
+### Versions and support
+
+| Branch     | Neovim Version Compatibility | Features                                                              |
+| ---------- | ---------------------------- | --------------------------------------------------------------------- |
+| compat-v10 | `<0.11`                      | - Charwise<br>- Linewise                                              |
+| main       | `>=0.11`                     | - Charwise<br>- Linewise<br>- Blockwise<br>- Incremental Highlighting |
+
+- `compat-v10` will receive bug fixes, documentation improvements, and new features from PRs as long as they are compatible with `Neovim < 0.11`, but the maintainer will not develop new features for this branch
+- `main` is the primary development branch
 
 ## Credit
 
