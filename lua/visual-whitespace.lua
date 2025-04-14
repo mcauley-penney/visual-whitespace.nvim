@@ -273,10 +273,10 @@ M.toggle = function()
 
   if not CFG.enabled then
     disable_highlighting()
-    v.notify("visual-whitespace disabled", v.log.levels.WARN, { title = "visual-whitespace" })
+    v.notify("[visual-whitespace]: highlighting disabled", v.log.levels.INFO, { title = "visual-whitespace" })
   else
     recompute_active()
-    v.notify("visual-whitespace enabled", v.log.levels.INFO, { title = "visual-whitespace" })
+    v.notify("[visual-whitespace]: highlighting enabled", v.log.levels.INFO, { title = "visual-whitespace" })
   end
 end
 
