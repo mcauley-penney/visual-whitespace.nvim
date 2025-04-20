@@ -22,19 +22,24 @@ To install the plugin with the default settings using Lazy:
 `visual-whitespace` comes with the following options and defaults:
 
 ```lua
-    opts = {
-      enabled = true,
-      highlight = { link = "Visual" },
-      space_char = '·',
-      tab_char = '→',
-      unix_char = '↲',
-      mac_char = '←',
-      dos_char = '↙',
-      excluded = {
-        filetypes = {},
-        buftypes = {}
-      }
-    },
+opts = {
+  enabled = true,
+  highlight = { link = "Visual", default = true },
+  list_chars = {
+    space = '·',
+    tab = '→',
+    nbsp = '␣',
+  },
+  fileformat_chars = {
+    unix = '↲',
+    mac = '←',
+    dos = '↙',
+  },
+  ignore = {
+    filetypes = {},
+    buftypes = {}
+  }
+}
 ```
 
 ### Highlighting
@@ -83,16 +88,17 @@ visual-whitespace captures:
 - spaces
 - tabs
 - non-breaking spaces
-- new line chars, [unlike VSCode](https://github.com/microsoft/vscode/issues/12223)
+- new line chars
+  - `Note:` [VSCode does not have this feature](https://github.com/microsoft/vscode/issues/12223). Because it is ostensibly desirable to VSCode users and Neovim already allows this via the `eol` key of the `listchars` option, this plugin has chosen to implement it. We have also made decisions about what to display, again given that we cannot follow VSCode's example but also because of the desire to improve upon the default Neovim experience. Given this, this plugin displays a symbol indicating the current `fileformat`, e.g. `←` for `mac` and `↲` for `unix`, even though it is all just `\n` internally. This is a departure from Neovim's `listchars` option.
 
 ### Versions and support
 
-| Branch     | Neovim Version Compatibility | Features                                                              |
-| ---------- | ---------------------------- | --------------------------------------------------------------------- |
-| compat-v10 | `<0.11`                      | - Charwise<br>- Linewise                                              |
-| main       | `>=0.11`                     | - Charwise<br>- Linewise<br>- Blockwise<br>- Incremental Highlighting |
+| Branch     | Neovim Version Compatibility | Features                                                                              |
+| ---------- | ---------------------------- | ------------------------------------------------------------------------------------- |
+| compat-v10 | `<0.11`                      | - Charwise<br>- Linewise                                                              |
+| main       | `>=0.11`                     | - Charwise<br>- Linewise<br>- Blockwise<br>- Redraw-time, viewport-aware highlighting |
 
-- `compat-v10` will receive bug fixes, documentation improvements, and new features from PRs as long as they are compatible with `Neovim < 0.11`, but the maintainer will not develop new features for this branch
+- `compat-v10` will accept PRs as long as they are compatible with `Neovim < 0.11`, but the maintainer will not develop this branch
 - `main` is the primary development branch
 
 ## Credit
