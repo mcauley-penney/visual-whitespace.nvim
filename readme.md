@@ -25,20 +25,26 @@ To install the plugin with the default settings using Lazy:
 opts = {
   enabled = true,
   highlight = { link = "Visual", default = true },
+  match_types = {
+    space = true,
+    tab = true,
+    nbsp = true,
+    lead = false,
+    trail = false,
+  },
   list_chars = {
-    space = '·',
-    tab = '→',
-    nbsp = '␣',
+    space = "·",
+    tab = "↦",
+    nbsp = "␣",
+    lead = "‹",
+    trail = "›",
   },
   fileformat_chars = {
-    unix = '↲',
-    mac = '←',
-    dos = '↙',
+    unix = "↲",
+    mac = "←",
+    dos = "↙",
   },
-  ignore = {
-    filetypes = {},
-    buftypes = {}
-  }
+  ignore = { filetypes = {}, buftypes = {} },
 }
 ```
 
@@ -85,21 +91,24 @@ This plugin provides this ability inside of Neovim's visual/mouse selections, al
 
 visual-whitespace captures:
 
-- spaces
 - tabs
+- spaces
+- leading and trailing spaces
+  - each overrides the "space" setting, like the default behavior of `:h listchars`
+    - This means that, if you show all three, leading and trailing spaces will display with different characters than spaces between words
 - non-breaking spaces
-- new line chars
-  - `Note:` [VSCode does not have this feature](https://github.com/microsoft/vscode/issues/12223). Because it is ostensibly desirable to VSCode users and Neovim already allows this via the `eol` key of the `listchars` option, this plugin has chosen to implement it. We have also made decisions about what to display, again given that we cannot follow VSCode's example but also because of the desire to improve upon the default Neovim experience. Given this, this plugin displays a symbol indicating the current `fileformat`, e.g. `←` for `mac` and `↲` for `unix`, even though it is all just `\n` internally. This is a departure from Neovim's `listchars` option.
+- fileformat-specific new line characters
+  - `Note:` [VSCode does not currently have support for any new line character display](https://github.com/microsoft/vscode/issues/12223). While they support displaying characters at `eol` via `:h listchars`, [Vim](https://github.com/vim/vim/issues/6119) and [Neovim](https://github.com/neovim/neovim/issues/31173) do not support distinguishing between the line endings specific to the `fileformats` they support (`unix`, `dos`, `mac`). We intend to extend upon the built-in experience by displaying characters at `eol` that indicate the current `:h fileformat`, e.g. `↲` for `unix` but `←` for `mac`.
 
 ### Versions and support
 
-| Branch     | Neovim Version Compatibility | Features                                                                              |
-| ---------- | ---------------------------- | ------------------------------------------------------------------------------------- |
-| compat-v10 | `<0.11`                      | - Charwise<br>- Linewise                                                              |
-| main       | `>=0.11`                     | - Charwise<br>- Linewise<br>- Blockwise<br>- Redraw-time, viewport-aware highlighting |
+| Branch     | Neovim Version Compatibility | Modes Supported               | Characters Supported                                                        | Speed                          |
+| ---------- | ---------------------------- | ----------------------------- | --------------------------------------------------------------------------- | ------------------------------ |
+| main       | `>=0.11`                     | Charwise, linewise, blockwise | Spaces, leading spaces, trailing spaces, tabs, fileformat-specific newlines | Redraw-time, viewport-specific |
+| compat-v10 | `<0.11`                      | Charwise, linewise            | Spaces, tabs, linefeeds (Unix newlines)                                     | Very slow                      |
 
-- `compat-v10` will accept PRs as long as they are compatible with `Neovim < 0.11`, but the maintainer will not develop this branch
-- `main` is the primary development branch
+- `main` is the primary development branch. The documentation above is for this branch.
+- `compat-v10` will accept PRs as long as they are compatible with `Neovim < 0.11`, but the maintainer will not develop this branch.
 
 ## Credit
 
