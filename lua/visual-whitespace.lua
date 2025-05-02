@@ -53,13 +53,17 @@ local function is_allowed_ft_bt()
 end
 
 local function lead_and_trail_bounds(line)
-  local _, last_lead_byte = line:find("^ +")
+  local WS_FOR_BOUNDS = "[ \t\u{00A0}]"
+  local _, last_lead_byte = line:find("^" .. WS_FOR_BOUNDS .. "*")
+  local first_trail_byte = line:match("()" .. WS_FOR_BOUNDS .. "*$")
   local lead_end = 0
-  if last_lead_byte then lead_end = v.str_utfindex(line, last_lead_byte) + 1 end
-
-  local first_trail_byte = line:match("() +$")
   local trail_start = math.huge
-  if first_trail_byte then
+
+  if last_lead_byte and last_lead_byte > 0 then
+    lead_end = v.str_utfindex(line, last_lead_byte) + 1
+  end
+
+  if first_trail_byte and first_trail_byte <= #line then
     trail_start = v.str_utfindex(line, first_trail_byte)
   end
 
