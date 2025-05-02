@@ -7,7 +7,8 @@ local NS = api.nvim_create_namespace("VisualWhitespace")
 local HL = "VisualNonText"
 local STATE = { user_enabled = true, active = false }
 
-local WS_RX = [[\v( |\t|\r|\U00A0)]]
+local NBSP = v.fn.nr2char(160)
+local WS_RX = [[\v( |\t|\r|]] .. NBSP .. ')'
 
 local CFG = {
   enabled = true,
