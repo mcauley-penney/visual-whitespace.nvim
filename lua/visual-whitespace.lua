@@ -8,7 +8,7 @@ local HL = "VisualNonText"
 local STATE = { user_enabled = true, active = false }
 
 local NBSP = v.fn.nr2char(160)
-local WS_RX = [[\v( |\t|\r|]] .. NBSP .. ')'
+local WS_RX = [[\v( |\t|\r|]] .. NBSP .. ")"
 
 local CFG = {
   enabled = true,
@@ -233,8 +233,6 @@ function M.toggle()
 end
 
 function M.setup(user_cfg)
-  DEFAULT_CFG = v.tbl_deep_extend("force", {}, CFG, user_cfg or {})
-
   local lcs_defaults = read_opt_listchars()
 
   DEFAULT_CFG =
