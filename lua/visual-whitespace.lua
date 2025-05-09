@@ -237,6 +237,8 @@ function M.setup(user_cfg)
 
   DEFAULT_CFG =
     v.tbl_deep_extend("force", { list_chars = lcs_defaults }, CFG, user_cfg)
+	DEFAULT_CFG.highlight = user_cfg.highlight or CFG.highlight
+	DEFAULT_CFG.highlight.force = true
 
   STATE.user_enabled = DEFAULT_CFG.enabled
 
