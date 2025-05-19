@@ -97,6 +97,8 @@ opts = {
 vim.api.nvim_set_hl(0, "VisualNonText", { fg = "#5D5F71", bg = "#24282d"})
 ```
 
+The plugin's highlighting order has a precedence: `default → colors cheme → user configuration`.
+
 ### Functions
 
 visual-whitespace affords the following user-facing functions:

@@ -10,7 +10,7 @@ local STATE = { user_enabled = true, active = false }
 local NBSP = v.fn.nr2char(160)
 local WS_RX = [[\v( |\t|\r|]] .. NBSP .. ")"
 
-local CFG = {
+local BASE_CFG = {
   enabled = true,
   highlight = { link = "Visual", default = true },
   match_types = {
@@ -34,7 +34,7 @@ local CFG = {
   },
   ignore = { filetypes = {}, buftypes = {} },
 }
-local DEFAULT_CFG = v.deepcopy(CFG)
+local CFG = v.deepcopy(BASE_CFG)
 
 --------------------------------------------------------------------------------
 -- Helper functions
@@ -49,8 +49,8 @@ local function is_allowed_ft_bt()
   local bufnr = api.nvim_get_current_buf()
   local ft = api.nvim_buf_get_option(bufnr, "filetype")
   local bt = api.nvim_buf_get_option(bufnr, "buftype")
-  return not v.tbl_contains(DEFAULT_CFG.ignore.filetypes, ft)
-    and not v.tbl_contains(DEFAULT_CFG.ignore.buftypes, bt)
+  return not v.tbl_contains(CFG.ignore.filetypes, ft)
+    and not v.tbl_contains(CFG.ignore.buftypes, bt)
 end
 
 local function lead_and_trail_bounds(line)
@@ -74,23 +74,23 @@ end
 local function pick_glyph(ch, col, lead_end, trail_start)
   local function fallback(type)
     if type then
-      return DEFAULT_CFG.list_chars[type == DEFAULT_CFG.match_types.lead and "lead" or "trail"]
-    elseif DEFAULT_CFG.match_types.space then
-      return DEFAULT_CFG.list_chars.space
+      return CFG.list_chars[type == CFG.match_types.lead and "lead" or "trail"]
+    elseif CFG.match_types.space then
+      return CFG.list_chars.space
     end
 
     return nil
   end
 
   if ch ~= " " then
-    return (ch == "\t" and DEFAULT_CFG.list_chars.tab)
-      or (ch == "\u{00A0}" and DEFAULT_CFG.list_chars.nbsp)
+    return (ch == "\t" and CFG.list_chars.tab)
+      or (ch == "\u{00A0}" and CFG.list_chars.nbsp)
       or nil
   end
 
-  if col <= lead_end then return fallback(DEFAULT_CFG.match_types.lead) end
-  if col >= trail_start then return fallback(DEFAULT_CFG.match_types.trail) end
-  if DEFAULT_CFG.match_types.space then return DEFAULT_CFG.list_chars.space end
+  if col <= lead_end then return fallback(CFG.match_types.lead) end
+  if col >= trail_start then return fallback(CFG.match_types.trail) end
+  if CFG.match_types.space then return CFG.list_chars.space end
 
   return nil
 end
@@ -124,7 +124,7 @@ local function match_ws_pos(line, char_idx)
 end
 
 local function get_marks(pos_list)
-  local ff_chars = DEFAULT_CFG.fileformat_chars
+  local ff_chars = CFG.fileformat_chars
   local bufnr = 0
   local ff = api.nvim_buf_get_option(bufnr, "fileformat")
   local nl_char = ff_chars[ff] or ff_chars.unix
@@ -232,29 +232,39 @@ function M.toggle()
   refresh()
 end
 
-function M.setup(user_cfg)
-  local lcs_defaults = read_opt_listchars()
-
-  DEFAULT_CFG =
-    v.tbl_deep_extend("force", { list_chars = lcs_defaults }, CFG, user_cfg)
-  DEFAULT_CFG.highlight = user_cfg.highlight or CFG.highlight
-  DEFAULT_CFG.highlight.force = true
-
-  STATE.user_enabled = DEFAULT_CFG.enabled
-
-  api.nvim_set_hl(0, HL, DEFAULT_CFG.highlight)
-
+function M.initialize()
   local grp = api.nvim_create_augroup("VisualWhitespaceCore", { clear = true })
+
   api.nvim_create_autocmd({ "BufEnter", "WinEnter", "FileType" }, {
     group = grp,
     callback = v.schedule_wrap(refresh),
   })
   api.nvim_create_autocmd("ColorScheme", {
     group = grp,
-    callback = function() api.nvim_set_hl(0, HL, DEFAULT_CFG.highlight) end,
+    callback = function() api.nvim_set_hl(0, HL, CFG.highlight) end,
   })
 
+  v.api.nvim_set_hl(0, HL, CFG.highlight)
+
   refresh()
+end
+
+function M.setup(user_cfg)
+  local lcs_defaults = read_opt_listchars()
+  user_cfg = user_cfg or {}
+
+  CFG = v.tbl_deep_extend(
+    "force",
+    { list_chars = lcs_defaults },
+    BASE_CFG,
+    user_cfg
+  )
+
+  CFG.highlight = user_cfg.highlight or CFG.highlight
+
+  STATE.user_enabled = CFG.enabled
+
+  M.initialize()
 end
 
 return M
