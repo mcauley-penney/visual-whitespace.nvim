@@ -9,6 +9,7 @@ local STATE = { user_enabled = true, active = false }
 
 local NBSP = v.fn.nr2char(160)
 local WS_RX = [[\v( |\t|\r|]] .. NBSP .. ")"
+local BOUNDS_WS_RX = "[ \t\r\u{00A0}]"
 
 local BASE_CFG = {
   enabled = true,
@@ -59,19 +60,19 @@ local function is_allowed_ft_bt()
 end
 
 local function lead_and_trail_bounds(line)
-  local WS_FOR_BOUNDS = "[ \t\u{00A0}]"
-  local _, last_lead_byte = line:find("^" .. WS_FOR_BOUNDS .. "*")
-  local first_trail_byte = line:match("()" .. WS_FOR_BOUNDS .. "*$")
-  local lead_end = 0
-  local trail_start = math.huge
-
-  if last_lead_byte and last_lead_byte > 0 then
-    lead_end = v.str_utfindex(line, last_lead_byte) + 1
+  if line:find("^" .. BOUNDS_WS_RX .. "*$") then
+    return vim.str_utfindex(line, "utf-32", #line, false) + 1, math.huge
   end
 
-  if first_trail_byte and first_trail_byte <= #line then
-    trail_start = v.str_utfindex(line, first_trail_byte)
-  end
+  local _, last_lead_b = line:find("^" .. BOUNDS_WS_RX .. "*")
+  local lead_end = last_lead_b
+      and vim.str_utfindex(line, "utf-32", last_lead_b, false) + 1
+    or 1
+
+  local first_trail_b = line:match("()" .. BOUNDS_WS_RX .. "*$")
+  local trail_start = first_trail_b
+      and vim.str_utfindex(line, "utf-32", first_trail_b, false)
+    or math.huge
 
   return lead_end, trail_start
 end
