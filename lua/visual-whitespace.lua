@@ -1,3 +1,4 @@
+local uv = vim.uv
 local v = vim
 local api = v.api
 local fn = v.fn
@@ -54,9 +55,29 @@ local function is_visual_mode()
   return m == "v" or m == "V" or m == "\22"
 end
 
+local function file_has_nul(path)
+  local fd = uv.fs_open(path, "r", 438)
+  if not fd then return false end
+
+  local chunk = uv.fs_read(fd, 8192, 0)
+  uv.fs_close(fd)
+
+  return chunk and chunk:find("\0", 1, true)
+end
+
+local function is_binary_buf()
+  local bufnr = api.nvim_get_current_buf()
+
+  if vim.bo[bufnr].binary then return true end
+
+  local name = api.nvim_buf_get_name(bufnr)
+  return name ~= "" and file_has_nul(name)
+end
+
 local function is_allowed_ft_bt()
   return not CFG.ignore.filetypes[v.bo.filetype]
     and not CFG.ignore.buftypes[v.bo.buftype]
+    and not is_binary_buf()
 end
 
 local function lead_and_trail_bounds(line)
