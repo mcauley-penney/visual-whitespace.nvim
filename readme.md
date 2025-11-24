@@ -31,9 +31,7 @@ To install the plugin with the default settings using Lazy:
 ```lua
   {
     'mcauley-penney/visual-whitespace.nvim',
-    config = true,
     event = "ModeChanged *:[vV\22]", -- optionally, lazy load on entering visual mode
-    opts = {},
   }
 ```
 
