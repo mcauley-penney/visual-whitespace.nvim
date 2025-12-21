@@ -8,9 +8,12 @@ local NS = api.nvim_create_namespace("VisualWhitespace")
 local HL = "VisualNonText"
 local STATE = { user_enabled = true, active = false }
 
-local NBSP = v.fn.nr2char(160)
-local WS_RX = [[\v( |\t|\r|]] .. NBSP .. ")"
-local BOUNDS_WS_RX = "[ \t\r\u{00A0}]"
+local WS = {
+  [0x20] = true, -- space
+  [0x09] = true, -- tab
+  [0x0D] = true, -- carriage return
+  [0xA0] = true, -- nbsp
+}
 
 local BASE_CFG = {
   enabled = true,
@@ -38,7 +41,6 @@ local BASE_CFG = {
 }
 local CFG = v.deepcopy(BASE_CFG)
 
-local region = {}
 local selection = {}
 
 ------- Helper functions
@@ -80,43 +82,42 @@ local function is_allowed_ft_bt()
     and not is_binary_buf()
 end
 
-local function lead_and_trail_bounds(line)
-  if line:find("^" .. BOUNDS_WS_RX .. "*$") then
-    return vim.str_utfindex(line, "utf-32", #line, false) + 1, math.huge
+local function get_lead_and_trail_bounds(utf_start_pos_tbl, line)
+  local n = #utf_start_pos_tbl
+  if n == 0 then return 0, 0 end
+
+  local lead_end = #line
+  for i = 1, n do
+    local codepoint = vim.fn.strgetchar(line, i - 1)
+    if not WS[codepoint] then
+      lead_end = utf_start_pos_tbl[i] - 1
+      break
+    end
   end
 
-  local _, last_lead_b = line:find("^" .. BOUNDS_WS_RX .. "*")
-  local lead_end = last_lead_b
-      and vim.str_utfindex(line, "utf-32", last_lead_b, false) + 1
-    or 1
-
-  local first_trail_b = line:match("()" .. BOUNDS_WS_RX .. "*$")
-  local trail_start = first_trail_b
-      and vim.str_utfindex(line, "utf-32", first_trail_b, false)
-    or math.huge
+  local trail_start = 0
+  for i = n, 1, -1 do
+    local codepoint = vim.fn.strgetchar(line, i - 1)
+    if not WS[codepoint] then
+      trail_start = utf_start_pos_tbl[i] - 1
+      break
+    end
+  end
 
   return lead_end, trail_start
 end
 
-local function pick_glyph(ch, col, lead_end, trail_start)
-  local function fallback(type)
-    if type then
-      return CFG.list_chars[type == CFG.match_types.lead and "lead" or "trail"]
-    elseif CFG.match_types.space then
-      return CFG.list_chars.space
-    end
-
+local function pick_glyph(char, col, lead_end, trail_start)
+  if char ~= " " then
+    if char == "\t" then return CFG.list_chars.tab end
+    if char == "\u{00A0}" then return CFG.list_chars.nbsp end
     return nil
   end
 
-  if ch ~= " " then
-    return (ch == "\t" and CFG.list_chars.tab)
-      or (ch == "\u{00A0}" and CFG.list_chars.nbsp)
-      or nil
+  if col < lead_end and CFG.match_types.lead then return CFG.list_chars.lead end
+  if col > trail_start and CFG.match_types.trail then
+    return CFG.list_chars.trail
   end
-
-  if col <= lead_end then return fallback(CFG.match_types.lead) end
-  if col >= trail_start then return fallback(CFG.match_types.trail) end
   if CFG.match_types.space then return CFG.list_chars.space end
 
   return nil
@@ -137,31 +138,45 @@ local function read_opt_listchars()
   }
 end
 
-------- Extmark utilities
-local function match_ws_pos(line, char_idx)
-  local res = v.fn.matchstrpos(line, WS_RX, char_idx - 1)
-  local s_char = tonumber(res[2])
-  if s_char == -1 then return nil, nil end
-
-  local match_text = res[1]
-  return s_char + 1, match_text
+local function make_range(s_row, s_col, e_row, e_col)
+  local start_pos = vim.pos(s_row, s_col)
+  local end_pos = vim.pos(e_row, e_col)
+  return vim.range(start_pos, end_pos)
 end
 
-local function marks_for_line(bufnr, row, s_col, e_col, nl_char)
-  local line = api.nvim_buf_get_lines(bufnr, row - 1, row, true)[1] or ""
-  local marks, idx = {}, s_col
-  local lead_end, trail_start = lead_and_trail_bounds(line)
-  local ch = nil
+------- Extmark utilities
+local function get_line_marks(bufnr, range, nl_char)
+  local row = range.start.row
+  local line = api.nvim_buf_get_lines(bufnr, row, row + 1, true)[1]
 
-  while idx <= math.min(e_col, #line) do
-    idx, ch = match_ws_pos(line, idx)
-    if not idx or idx > e_col then break end
-    local g = pick_glyph(ch, idx, lead_end, trail_start)
-    if g then marks[#marks + 1] = { row, idx, g } end
-    idx = idx + 1
+  local s_col = range.start.col
+  local e_col = math.min(range.end_.col, #line)
+
+  local utf_start_pos_tbl = vim.str_utf_pos(line)
+  local lead_end, trail_start =
+    get_lead_and_trail_bounds(utf_start_pos_tbl, line)
+
+  local marks = {}
+  local n = #utf_start_pos_tbl
+
+  for i = 1, n do
+    local pos = utf_start_pos_tbl[i] - 1
+    if s_col <= pos and pos <= e_col then
+      local codepoint = vim.fn.strgetchar(line, i - 1)
+      if WS[codepoint] then
+        local char = vim.fn.nr2char(codepoint)
+        local glyph = pick_glyph(char, pos, lead_end, trail_start)
+        if glyph then
+          marks[#marks + 1] = { row = row, col = pos, glyph = glyph }
+        end
+      end
+    end
   end
 
-  if e_col > #line then marks[#marks + 1] = { row, #line + 1, nl_char } end
+  if e_col >= #line then
+    marks[#marks + 1] = { row = row, col = #line, glyph = nl_char } -- EOL is col=#line
+  end
+
   return marks
 end
 
@@ -174,48 +189,69 @@ local function provider_on_start()
     return false
   end
 
-  local mode = fn.mode(1)
-  region =
-    fn.getregionpos(fn.getpos("v"), fn.getpos("."), { type = mode, eol = true })
-
-  selection = {}
-  for _, r in ipairs(region) do
-    local row = r[1][2]
-    local scol = r[1][3]
-    local ecol = r[2][3]
-    selection[row] = { scol, ecol }
-  end
+  return true
 end
 
 local function provider_on_win(_, winid, _, topline, botline)
   if winid ~= api.nvim_get_current_win() then return false end
 
-  local row_min = region[1][1][2]
-  local row_max = region[#region][2][2]
+  local start_coords = fn.getpos("v")
+  local end_coords = fn.getpos(".")
+  local cur_range = make_range(
+    start_coords[2] - 1,
+    start_coords[3] - 1,
+    end_coords[2] - 1,
+    end_coords[3] - 1
+  )
 
-  if botline < row_min - 1 or topline > row_max - 1 then return false end
+  local viewport = make_range(topline, 0, botline + 1, 0)
+
+  if not vim.range.intersect(cur_range, viewport) then return false end
+
+  selection = {}
+
+  local region_tbl =
+    fn.getregionpos(start_coords, end_coords, { type = fn.mode(1), eol = true })
+
+  for _, region in ipairs(region_tbl) do
+    local s = region[1]
+    local e = region[2]
+
+    local s_row, s_col = s[2] - 1, s[3] - 1
+    local e_row, e_col = e[2] - 1, e[3] - 1
+
+    local cur_row_range = make_range(s_row, s_col, e_row, e_col)
+
+    local row = cur_row_range.start.row
+    selection[row] = cur_row_range
+  end
+
+  return true
 end
 
 local function provider_on_line(_, winid, bufnr, lnum0)
   if winid ~= api.nvim_get_current_win() then return end
   if not api.nvim_buf_is_valid(bufnr) then return end
 
-  local row = lnum0 + 1
+  local row = lnum0
 
   local range = selection[row]
   if not range then return end
 
-  local s_col, e_col = range[1], range[2]
   local ff = v.bo[bufnr].fileformat
   local nl_glyph = CFG.fileformat_chars[ff] or CFG.fileformat_chars.unix
 
-  for _, mark in ipairs(marks_for_line(bufnr, row, s_col, e_col, nl_glyph)) do
-    api.nvim_buf_set_extmark(bufnr, NS, row - 1, mark[2] - 1, {
-      virt_text = { { mark[3], HL } },
+  local line_marks = get_line_marks(bufnr, range, nl_glyph)
+
+  for _, mark in ipairs(line_marks) do
+    api.nvim_buf_set_extmark(bufnr, NS, mark.row, mark.col, {
+      virt_text = { { mark.glyph, HL } },
       virt_text_pos = "overlay",
       ephemeral = true,
     })
   end
+
+  return true
 end
 
 ------- initialization logic

@@ -117,8 +117,9 @@ end
 
 | Branch     | Neovim Version Compatibility | Modes Supported               | Characters Supported                                                        | Speed                          |
 | ---------- | ---------------------------- | ----------------------------- | --------------------------------------------------------------------------- | ------------------------------ |
-| main       | `>=0.11`                     | Charwise, linewise, blockwise | Spaces, leading spaces, trailing spaces, tabs, fileformat-specific newlines | Redraw-time, viewport-specific |
+| main       | `>=0.12`                     | Charwise, linewise, blockwise | Spaces, leading spaces, trailing spaces, tabs, fileformat-specific newlines | Redraw-time, viewport-specific |
+| compat-v11 | `<0.12 and >0.10`            | Charwise, linewise, blockwise | Spaces, leading spaces, trailing spaces, tabs, fileformat-specific newlines | Redraw-time, viewport-specific |
 | compat-v10 | `<0.11`                      | Charwise, linewise            | Spaces, tabs, linefeeds (Unix newlines)                                     | Slow                           |
 
-- `main` is the primary development branch. The documentation above is for this branch.
-- `compat-v10` will accept PRs as long as they are compatible with `Neovim < 0.11`, but the maintainer will not develop this branch.
+- `main` is the primary branch. The documentation above is for this branch.
+- All older versions will accept compatible PRs, but the repo owner will not actively develop them.
