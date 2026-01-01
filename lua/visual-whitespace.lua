@@ -139,7 +139,8 @@ end
 
 ------- Extmark utilities
 local function match_ws_pos(line, char_idx)
-  local res = v.fn.matchstrpos(line, WS_RX, char_idx - 1)
+  local res = vim.F.npcall(v.fn.matchstrpos, line, WS_RX, char_idx - 1)
+  if not res then return nil, nil end
   local s_char = tonumber(res[2])
   if s_char == -1 then return nil, nil end
 
