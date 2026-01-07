@@ -8,13 +8,6 @@ local NS = api.nvim_create_namespace("VisualWhitespace")
 local HL = "VisualNonText"
 local STATE = { user_enabled = true, active = false }
 
-local WS = {
-  [0x20] = true, -- space
-  [0x09] = true, -- tab
-  [0x0D] = true, -- carriage return
-  [0xA0] = true, -- nbsp
-}
-
 local BASE_CFG = {
   enabled = true,
   highlight = { link = "Visual", default = true },
@@ -82,14 +75,28 @@ local function is_allowed_ft_bt()
     and not is_binary_buf()
 end
 
+local function char_is_ws(byte, line, i)
+  if
+    byte ~= 0x20
+    and byte ~= 0x09
+    and byte ~= 0x0D
+    and (byte ~= 0xC2 and line:byte(i + 1) ~= 0xA0)
+  then
+    return false
+  end
+
+  return true
+end
+
 local function get_lead_and_trail_bounds(utf_start_pos_tbl, line)
   local n = #utf_start_pos_tbl
   if n == 0 then return 0, 0 end
 
   local lead_end = #line
   for i = 1, n do
-    local codepoint = vim.fn.strgetchar(line, i - 1)
-    if not WS[codepoint] then
+    local byte = line:byte(i)
+
+    if not char_is_ws(byte, line, i) then
       lead_end = utf_start_pos_tbl[i] - 1
       break
     end
@@ -97,8 +104,9 @@ local function get_lead_and_trail_bounds(utf_start_pos_tbl, line)
 
   local trail_start = 0
   for i = n, 1, -1 do
-    local codepoint = vim.fn.strgetchar(line, i - 1)
-    if not WS[codepoint] then
+    local byte = line:byte(i)
+
+    if not char_is_ws(byte, line, i) then
       trail_start = utf_start_pos_tbl[i] - 1
       break
     end
@@ -157,20 +165,31 @@ local function get_line_marks(bufnr, range, nl_char)
     get_lead_and_trail_bounds(utf_start_pos_tbl, line)
 
   local marks = {}
-  local n = #utf_start_pos_tbl
 
-  for i = 1, n do
+  for i = 1, #utf_start_pos_tbl do
     local pos = utf_start_pos_tbl[i] - 1
-    if s_col <= pos and pos <= e_col then
-      local codepoint = vim.fn.strgetchar(line, i - 1)
-      if WS[codepoint] then
-        local char = vim.fn.nr2char(codepoint)
-        local glyph = pick_glyph(char, pos, lead_end, trail_start)
-        if glyph then
-          marks[#marks + 1] = { row = row, col = pos, glyph = glyph }
-        end
+    if s_col > pos or pos > e_col then goto continue end
+
+    local char = nil
+    local byte = line:byte(i)
+    if byte == 0x20 then
+      char = " "
+    elseif byte == 0x09 then
+      char = "\t"
+    elseif byte == 0x0D then
+      char = "\r"
+    elseif byte == 0xC2 and line:byte(i + 1) == 0xA0 then
+      char = "\u{00A0}"
+      i = i + 1
+    end
+
+    if char then
+      local glyph = pick_glyph(char, pos, lead_end, trail_start)
+      if glyph then
+        marks[#marks + 1] = { row = row, col = pos, glyph = glyph }
       end
     end
+    ::continue::
   end
 
   if e_col >= #line then
