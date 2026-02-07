@@ -15,6 +15,9 @@ local WS = {
   [0xA0] = true, -- nbsp
 }
 
+local BIN_CACHE_KEY = "visual_whitespace_is_binary"
+local BIN_CACHE_NAME = "visual_whitespace_bin_name"
+
 local BASE_CFG = {
   enabled = true,
   highlight = { link = "Visual", default = true },
@@ -73,7 +76,17 @@ local function is_binary_buf()
   if vim.bo[bufnr].binary then return true end
 
   local name = api.nvim_buf_get_name(bufnr)
-  return name ~= "" and file_has_nul(name)
+  if name == "" then return false end
+
+  local b = vim.b[bufnr]
+  if b[BIN_CACHE_NAME] == name and b[BIN_CACHE_KEY] ~= nil then
+    return b[BIN_CACHE_KEY]
+  end
+
+  local is_bin = file_has_nul(name) or false
+  b[BIN_CACHE_NAME] = name
+  b[BIN_CACHE_KEY] = is_bin
+  return is_bin
 end
 
 local function is_allowed_ft_bt()
