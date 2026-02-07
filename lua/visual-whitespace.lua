@@ -100,20 +100,25 @@ local function get_lead_and_trail_bounds(utf_start_pos_tbl, line)
   if n == 0 then return 0, 0 end
 
   local lead_end = #line
-  for i = 1, n do
-    local codepoint = vim.fn.strgetchar(line, i - 1)
-    if not WS[codepoint] then
-      lead_end = utf_start_pos_tbl[i] - 1
-      break
+
+  if CFG.match_types.lead then
+    for i = 1, n do
+      local codepoint = vim.fn.strgetchar(line, i - 1)
+      if not WS[codepoint] then
+        lead_end = utf_start_pos_tbl[i] - 1
+        break
+      end
     end
   end
 
   local trail_start = 0
-  for i = n, 1, -1 do
-    local codepoint = vim.fn.strgetchar(line, i - 1)
-    if not WS[codepoint] then
-      trail_start = utf_start_pos_tbl[i] - 1
-      break
+  if CFG.match_types.trail then
+    for i = n, 1, -1 do
+      local codepoint = vim.fn.strgetchar(line, i - 1)
+      if not WS[codepoint] then
+        trail_start = utf_start_pos_tbl[i] - 1
+        break
+      end
     end
   end
 
@@ -166,8 +171,10 @@ local function get_line_marks(bufnr, range, nl_char)
   local e_col = math.min(range.end_.col, #line)
 
   local utf_start_pos_tbl = vim.str_utf_pos(line)
-  local lead_end, trail_start =
-    get_lead_and_trail_bounds(utf_start_pos_tbl, line)
+  local lead_end, trail_start = 0, 0
+  if CFG.match_types.lead or CFG.match_types.trail then
+    lead_end, trail_start = get_lead_and_trail_bounds(utf_start_pos_tbl, line)
+  end
 
   local marks = {}
   local n = #utf_start_pos_tbl
