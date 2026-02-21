@@ -94,19 +94,21 @@ local function is_allowed_ft_bt()
 end
 
 local function lead_and_trail_bounds(line)
-  if line:find("^" .. BOUNDS_WS_RX .. "*$") then
-    return vim.str_utfindex(line, "utf-32", #line, false) + 1, math.huge
+  local lead_end = 0
+  if CFG.match_types.lead then
+    local _, last_lead_b = line:find("^" .. BOUNDS_WS_RX .. "*")
+    lead_end = last_lead_b
+        and vim.str_utfindex(line, "utf-32", last_lead_b, false) + 1
+      or 1
   end
 
-  local _, last_lead_b = line:find("^" .. BOUNDS_WS_RX .. "*")
-  local lead_end = last_lead_b
-      and vim.str_utfindex(line, "utf-32", last_lead_b, false) + 1
-    or 1
-
-  local first_trail_b = line:match("()" .. BOUNDS_WS_RX .. "*$")
-  local trail_start = first_trail_b
-      and vim.str_utfindex(line, "utf-32", first_trail_b, false)
-    or math.huge
+  local trail_start = math.huge
+  if CFG.match_types.trail then
+    local first_trail_b = line:match("()" .. BOUNDS_WS_RX .. "*$")
+    trail_start = first_trail_b
+        and vim.str_utfindex(line, "utf-32", first_trail_b, false)
+      or math.huge
+  end
 
   return lead_end, trail_start
 end
@@ -164,7 +166,10 @@ end
 local function marks_for_line(bufnr, row, s_col, e_col, nl_char)
   local line = api.nvim_buf_get_lines(bufnr, row - 1, row, true)[1] or ""
   local marks, idx = {}, s_col
-  local lead_end, trail_start = lead_and_trail_bounds(line)
+  local lead_end, trail_start = 0, math.huge
+  if CFG.match_types.lead or CFG.match_types.trail then
+    lead_end, trail_start = lead_and_trail_bounds(line)
+  end
   local ch = nil
 
   while idx <= math.min(e_col, #line) do
