@@ -59,6 +59,10 @@ local function is_visual_mode()
   return m == "v" or m == "V" or m == "\22"
 end
 
+local function conceal_active_in_visual()
+  return v.wo.conceallevel > 0 and v.wo.concealcursor:find("v", 1, true) ~= nil
+end
+
 local function file_has_nul(path)
   local fd = uv.fs_open(path, "r", 438)
   if not fd then return false end
@@ -166,6 +170,7 @@ end
 local function marks_for_line(bufnr, row, s_col, e_col, nl_char)
   local line = api.nvim_buf_get_lines(bufnr, row - 1, row, true)[1] or ""
   local line_len = #line
+  local conceal_active = conceal_active_in_visual()
   local match_types = CFG.match_types
   local list_chars = CFG.list_chars
   local match_space = match_types.space
@@ -218,12 +223,19 @@ local function marks_for_line(bufnr, row, s_col, e_col, nl_char)
           glyph = nbsp_glyph
         end
 
-        if glyph then marks[#marks + 1] = { row, pos, glyph } end
+        local glyph_concealed = conceal_active
+          and fn.synconcealed(row, pos)[1] == 1
+
+        if glyph and not glyph_concealed then
+          marks[#marks + 1] = { row, pos, glyph }
+        end
       end
     end
   end
 
-  if e_col > line_len then marks[#marks + 1] = { row, line_len + 1, nl_char } end
+  if e_col > line_len then
+    marks[#marks + 1] = { row, line_len + 1, nl_char }
+  end
   return marks
 end
 
