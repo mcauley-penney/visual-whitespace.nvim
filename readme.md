@@ -14,53 +14,49 @@ In VSCode, the `renderWhitespace` options allows the user to choose how to displ
 
 <sub>GIF: Capturing tabs, non-breaking spaces, spaces, and line feed characters.</sub>
 
-visual-whitespace captures:
+visual-whitespace captures leading, middle, and trailing spaces; tabs; non-breaking spaces; and fileformat-specific new lines
 
-- spaces
-- tabs
-- non-breaking spaces
-- leading and trailing spaces
-  - overrides the general spaces, like the default behavior of `:h listchars`
-- fileformat-specific new lines
-  - `Note:` [VSCode does not currently have support for any new line character display](https://github.com/microsoft/vscode/issues/12223). This plugins enhances [Vim's](https://github.com/vim/vim/issues/6119) and [Neovim's](https://github.com/neovim/neovim/issues/31173) existing new line character support by displaying new lines that are specific to the current fileformat.
+> [!NOTE]
+> VSCode [does not currently have support for any new line character display](https://github.com/microsoft/vscode/issues/12223).
 
-## Installation
+## Installation and Configuration
 
-To install the plugin with the default settings using Lazy:
+**vim.pack**, with lazy loading and using the `setup()` function
+
+```lua
+vim.pack.add({
+  "https://github.com/mcauley-penney/visual-whitespace.nvim",
+}, { load = false })
+
+-- configuring with lazy load on entering visual mode
+ vim.api.nvim_create_autocmd("ModeChanged", {
+  pattern = "*:[vV\22]",
+  once = true,
+  callback = function()
+    vim.cmd.packadd("visual-whitespace.nvim")
+    require("visual-whitespace").setup({
+      -- your opts here ...
+    })
+  end,
+})
+```
+
+**lazy.nvim**
 
 ```lua
   {
     'mcauley-penney/visual-whitespace.nvim',
     event = "ModeChanged *:[vV\22]", -- optionally, lazy load on entering visual mode
+    opts = {
+      -- your opts here ...
+    }
   }
-```
-
-## Configuration
-
-### Method
-
-You can configure `visual-whitespace` using either:
-
-1. your plugin manager (e.g. lazy.nvim), or
-
-```lua
-opts = {
-    -- your opts here ...
-}
-```
-
-2. the `vim.g.visual_whitespace` global dictionary
-
-```lua
- vim.g.visual_whitespace = {
-     -- your opts here ...
- }
 ```
 
 ### Options and defaults
 
 ```lua
-opts = {
+{
   enabled = true,
   highlight = { link = "Visual", default = true },
   match_types = {
@@ -95,7 +91,7 @@ opts = {
 vim.api.nvim_set_hl(0, "VisualNonText", { fg = "#5D5F71", bg = "#24282d"})
 ```
 
-The plugin's highlighting order has a precedence: `default → colors cheme → user configuration`.
+The plugin's highlighting order has a precedence: `default → color scheme → user configuration`.
 
 ### Functions
 
@@ -117,7 +113,7 @@ end
 
 | Branch     | Neovim Version Compatibility | Modes Supported               | Characters Supported                                                        | Speed                          |
 | ---------- | ---------------------------- | ----------------------------- | --------------------------------------------------------------------------- | ------------------------------ |
-| main       | `>=0.11`                     | Charwise, linewise, blockwise | Spaces, leading spaces, trailing spaces, tabs, fileformat-specific newlines | Redraw-time, viewport-specific |
+| main       | `>=0.12`                     | Charwise, linewise, blockwise | Spaces, leading spaces, trailing spaces, tabs, fileformat-specific newlines | Redraw-time, viewport-specific |
 | compat-v10 | `<0.11`                      | Charwise, linewise            | Spaces, tabs, linefeeds (Unix newlines)                                     | Slow                           |
 
 - `main` is the primary development branch. The documentation above is for this branch.
